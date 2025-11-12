@@ -25,7 +25,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-*.json
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -182,7 +181,7 @@ cython_debug/
 .cursorindexingignore
 
 # MyAttendance Specific
-data.json                    # User data (personal attendance records)
+.json                    # User data (personal attendance records)
 attendance_report_*.txt      # Exported reports
 *.bak                        # Backup files
 *_old.py                     # Old backup Python files

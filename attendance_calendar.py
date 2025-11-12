@@ -128,7 +128,7 @@ class AttendanceCalendar:
             ("Some Absent", COLOR_ABSENT),
             ("Holiday", COLOR_HOLIDAY),
             ("Today", COLOR_TODAY),
-            ("Weekend/Future", COLOR_WEEKEND)
+            ("Sunday/Future", COLOR_WEEKEND)
         ]
         
         for idx, (label, color) in enumerate(legends):
@@ -540,7 +540,7 @@ class AttendanceCalendar:
                 
                 if date_obj == today:
                     bg_color = COLOR_TODAY
-                elif day_idx >= 5:  # Saturday/Sunday
+                elif day_idx == 6:  # Sunday only (Saturday has classes)
                     bg_color = COLOR_WEEKEND
                 elif date_obj <= today:
                     status = self.get_day_status(date_str)
