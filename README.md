@@ -103,7 +103,7 @@ Google Calendar-style interface for effortless attendance marking. Left-click fo
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/MyAttendance.git
+git clone https://github.com/siddhesh17b/MyAttendance.git
 cd MyAttendance
 ```
 
