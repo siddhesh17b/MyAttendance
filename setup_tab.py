@@ -1,3 +1,11 @@
+"""
+Setup Tab - Configuration interface
+Batch selection, semester dates, holidays, and reset functionality
+
+Author: Siddhesh Bisen
+GitHub: https://github.com/siddhesh17b
+"""
+
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkcalendar import Calendar

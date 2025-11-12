@@ -1,5 +1,9 @@
 """
-Attendance calculation functions for BunkBuddy
+Attendance Calculations - Math and date logic
+Handles attendance percentage, safe skip calculations, and date utilities
+
+Author: Siddhesh Bisen
+GitHub: https://github.com/siddhesh17b
 """
 
 from datetime import datetime

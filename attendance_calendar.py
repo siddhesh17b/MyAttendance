@@ -5,6 +5,9 @@ Features:
 - Click date to mark individual subjects absent/present
 - Right-click date to mark all classes as absent
 - Holiday toggle functionality
+
+Author: Siddhesh Bisen
+GitHub: https://github.com/siddhesh17b
 """
 
 import tkinter as tk

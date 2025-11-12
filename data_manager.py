@@ -1,3 +1,11 @@
+"""
+Data Manager - Timetable and JSON persistence
+Handles hardcoded timetable data and subject management
+
+Author: Siddhesh Bisen
+GitHub: https://github.com/siddhesh17b
+"""
+
 import json
 import os
 from tkinter import messagebox

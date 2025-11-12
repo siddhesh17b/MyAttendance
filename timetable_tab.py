@@ -1,3 +1,11 @@
+"""
+Timetable Tab - Weekly schedule display
+Visual color-coded timetable grid with batch-aware lab schedules
+
+Author: Siddhesh Bisen
+GitHub: https://github.com/siddhesh17b
+"""
+
 import tkinter as tk
 from tkinter import ttk
 from data_manager import get_app_data, TIMETABLE_DATA

@@ -1,6 +1,9 @@
 """
-BunkBuddy - Smart Attendance Planner
+MyAttendance - Smart Attendance Tracker
 Main application entry point
+
+Author: Siddhesh Bisen
+GitHub: https://github.com/siddhesh17b
 """
 
 import tkinter as tk

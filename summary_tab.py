@@ -6,6 +6,9 @@ Features:
 - Sortable table with all subjects
 - Color-coded status indicators  
 - Export report functionality
+
+Author: Siddhesh Bisen
+GitHub: https://github.com/siddhesh17b
 """
 
 import tkinter as tk
