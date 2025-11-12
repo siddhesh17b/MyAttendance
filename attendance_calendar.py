@@ -458,10 +458,18 @@ class AttendanceCalendar:
     
     def get_day_status(self, date_str):
         """Get the status of a day (present/absent/holiday/no_class)"""
+        app_data = get_app_data()
+        
+        # Check if date is within semester range
+        semester_start = app_data.get("semester_start")
+        semester_end = app_data.get("semester_end")
+        if semester_start and semester_end:
+            if not (semester_start <= date_str <= semester_end):
+                return "no_class"  # Outside semester range
+        
         if self.is_holiday_date(date_str):
             return "holiday"
         
-        app_data = get_app_data()
         date_obj = datetime.strptime(date_str, "%Y-%m-%d")
         day_name = date_obj.strftime("%A").upper()
         batch = app_data.get("batch", "B1/B3")
@@ -544,7 +552,9 @@ class AttendanceCalendar:
                     bg_color = COLOR_WEEKEND
                 elif date_obj <= today:
                     status = self.get_day_status(date_str)
-                    if status == "holiday":
+                    if status == "no_class":
+                        bg_color = COLOR_FUTURE  # Outside semester or no classes
+                    elif status == "holiday":
                         bg_color = COLOR_HOLIDAY
                     elif status == "absent":
                         bg_color = COLOR_ABSENT
