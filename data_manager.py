@@ -213,6 +213,10 @@ def save_data():
     try:
         with open(DATA_FILE, 'w') as f:
             json.dump(app_data, f, indent=2)
+    except IOError as e:
+        messagebox.showerror("Error", f"Failed to write to file (permission denied or disk full): {str(e)}")
+    except TypeError as e:
+        messagebox.showerror("Error", f"Invalid data format (cannot serialize): {str(e)}")
     except Exception as e:
         messagebox.showerror("Error", f"Failed to save data: {str(e)}")
 
@@ -238,9 +242,22 @@ def get_active_timetable():
         try:
             with open(CUSTOM_TIMETABLE_FILE, 'r') as f:
                 custom_timetable = json.load(f)
+                # Validate structure - must be dict with day keys
+                if not isinstance(custom_timetable, dict):
+                    print("Error: Custom timetable is not a dictionary")
+                    return TIMETABLE_DATA
+                # Validate each day has time slots dict
+                for day, time_slots in custom_timetable.items():
+                    if not isinstance(time_slots, dict):
+                        print(f"Error: Day {day} does not have valid time slots")
+                        return TIMETABLE_DATA
                 return custom_timetable
-        except Exception as e:
+        except (json.JSONDecodeError, IOError) as e:
             print(f"Error loading custom timetable: {e}")
+            messagebox.showerror("Error", f"Corrupted timetable file. Using default timetable.\n{str(e)}")
+            return TIMETABLE_DATA
+        except Exception as e:
+            print(f"Unexpected error loading custom timetable: {e}")
             return TIMETABLE_DATA
     return TIMETABLE_DATA
 
@@ -316,15 +333,27 @@ def import_timetable_from_csv(filepath=None):
         with open(filepath, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             
-            # Validate headers
+            # Validate headers exist
+            if not reader.fieldnames:
+                messagebox.showerror("Error", "CSV file is empty or has no headers")
+                return False
+            
+            # Validate required columns
             if not all(col in reader.fieldnames for col in ['Day', 'Time', 'Subject']):
                 messagebox.showerror("Error", "CSV must have columns: Day, Time, Subject")
                 return False
             
+            row_count = 0
             for row in reader:
+                row_count += 1
+                # Validate row has required fields
+                if not row.get('Day') or not row.get('Time'):
+                    messagebox.showwarning("Warning", f"Row {row_count}: Missing Day or Time. Skipping...")
+                    continue
+                
                 day = row['Day'].strip().upper()
                 time = row['Time'].strip()
-                subject = row['Subject'].strip()
+                subject = row.get('Subject', '').strip()  # Subject can be empty
                 
                 if day not in required_days:
                     messagebox.showwarning("Warning", f"Invalid day: {day}. Skipping...")

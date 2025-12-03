@@ -124,11 +124,19 @@ class TimetableTab:
     def extract_subject_name(self, cell_value):
         if not cell_value or cell_value.strip() == "":
             return ""
-        if "-" in cell_value:
-            parts = cell_value.split("-")
-            if len(parts) > 1:
-                return parts[1].split("(")[0].strip()
-        return cell_value.strip()
+        try:
+            if "-" in cell_value:
+                parts = cell_value.split("-")
+                if len(parts) > 1 and parts[1]:
+                    # Safely extract subject name
+                    subject_part = parts[1]
+                    if "(" in subject_part:
+                        return subject_part.split("(")[0].strip()
+                    return subject_part.strip()
+            return cell_value.strip()
+        except (IndexError, AttributeError) as e:
+            print(f"Error extracting subject name from '{cell_value}': {e}")
+            return cell_value.strip() if cell_value else ""
     
     def get_subject_colors(self, subject, time_slot):
         """

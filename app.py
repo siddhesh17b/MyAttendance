@@ -142,7 +142,12 @@ class BunkBuddyApp:
             else:
                 batch_names = sorted(list(batch_names))
             
-            batch_var.set(batch_names[0] if batch_names else "B1/B3")
+            # Safe access - ensure batch_names is not empty before accessing
+            if batch_names:
+                batch_var.set(batch_names[0])
+            else:
+                batch_var.set("B1/B3")
+                batch_names = ["B1/B3", "B2/B4"]  # Fallback to defaults
             
             for batch_name in batch_names:
                 ttk.Radiobutton(batch_container, text=batch_name, variable=batch_var, value=batch_name).pack(anchor=tk.W, pady=2)

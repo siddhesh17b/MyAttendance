@@ -368,8 +368,16 @@ class SetupTab:
     
     def on_dates_update(self):
         app_data = get_app_data()
-        app_data["semester_start"] = self.start_date_cal.get_date()
-        app_data["semester_end"] = self.end_date_cal.get_date()
+        start_date = self.start_date_cal.get_date()
+        end_date = self.end_date_cal.get_date()
+        
+        # Validate semester dates
+        if start_date >= end_date:
+            messagebox.showerror("Error", "Start date must be before end date!")
+            return
+        
+        app_data["semester_start"] = start_date
+        app_data["semester_end"] = end_date
         save_data()
         self.refresh_all_tabs()
         messagebox.showinfo("Success", "Semester dates updated!")
@@ -454,8 +462,16 @@ class SetupTab:
             messagebox.showwarning("Warning", "Please select a holiday to remove")
             return
         
-        index = self.holidays_tree.index(selected[0])
-        del app_data["holidays"][index]
+        try:
+            index = self.holidays_tree.index(selected[0])
+            if 0 <= index < len(app_data.get("holidays", [])):
+                del app_data["holidays"][index]
+            else:
+                messagebox.showerror("Error", "Invalid holiday selection")
+                return
+        except (tk.TclError, IndexError) as e:
+            messagebox.showerror("Error", f"Failed to remove holiday: {str(e)}")
+            return
         save_data()
         self.refresh()
         self.refresh_all_tabs()
@@ -580,19 +596,28 @@ class SetupTab:
             messagebox.showwarning("Warning", "Please select a skipped period to remove")
             return
         
-        if "skipped_days" not in app_data:
+        if "skipped_days" not in app_data or not app_data["skipped_days"]:
+            messagebox.showinfo("Info", "No skipped days to remove")
             return
         
-        index = self.skipped_tree.index(selected[0])
-        skipped = app_data["skipped_days"][index]
+        try:
+            index = self.skipped_tree.index(selected[0])
+            if not (0 <= index < len(app_data["skipped_days"])):
+                messagebox.showerror("Error", "Invalid skipped period selection")
+                return
+            
+            skipped = app_data["skipped_days"][index]
+        except (tk.TclError, IndexError, KeyError) as e:
+            messagebox.showerror("Error", f"Failed to access skipped period: {str(e)}")
+            return
         
         # Automatically remove absence marks for this period
         from datetime import datetime, timedelta
         try:
             start_date = datetime.strptime(skipped["start"], "%Y-%m-%d")
             end_date = datetime.strptime(skipped["end"], "%Y-%m-%d")
-        except ValueError:
-            messagebox.showerror("Error", "Invalid date format in skipped period")
+        except (ValueError, KeyError) as e:
+            messagebox.showerror("Error", f"Invalid date format in skipped period: {str(e)}")
             return
         current = start_date
         batch = app_data.get("batch", "B1/B3")

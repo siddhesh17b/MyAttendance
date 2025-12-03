@@ -292,7 +292,14 @@ class AttendanceCalendar:
         """Display subjects with checkboxes in side panel"""
         app_data = get_app_data()
         
-        if not subjects:
+        # Validate inputs
+        if not subjects or not isinstance(subjects, list):
+            self.clear_subjects_panel()
+            return
+        
+        # Validate app_data has subjects
+        if not app_data.get("subjects"):
+            messagebox.showerror("Error", "No subjects found in app data. Please reconfigure in Setup tab.")
             self.clear_subjects_panel()
             return
         

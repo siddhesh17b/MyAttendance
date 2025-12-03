@@ -121,13 +121,21 @@ def calculate_safe_skip(attended, total, threshold=75):
         Safe skip: (80 - 0.75*100) / 0.75 = (80 - 75) / 0.75 = 6.67 ≈ 6 classes
         After skipping 6: 80/(100+6) = 75.47% (still safe)
     """
-    if total == 0:
+    # Edge case validation
+    if total == 0 or attended < 0 or total < 0:
         return 0
+    
+    if threshold <= 0 or threshold > 100:
+        threshold = 75  # Default fallback
     
     # Calculate maximum classes that can be skipped
     # Formula: skips = (attended - threshold% * total) / threshold%
-    safe = int((attended - threshold/100 * total) / (threshold/100))
-    return max(0, safe)  # Never return negative
+    try:
+        threshold_decimal = threshold / 100.0
+        safe = int((attended - threshold_decimal * total) / threshold_decimal)
+        return max(0, safe)  # Never return negative
+    except (ZeroDivisionError, OverflowError):
+        return 0
 
 
 def get_attendance_status(percentage):
