@@ -1,9 +1,15 @@
 {
-  "batch": "B1/B3",
+  "batch": "B2/B4",
   "semester_start": "2025-07-07",
   "semester_end": "2025-11-04",
   "holidays": [],
   "subjects": [
+    {
+      "name": "Minor",
+      "weekly_count": 3,
+      "total_override": null,
+      "absent_dates": []
+    },
     {
       "name": "DM",
       "weekly_count": 3,
@@ -29,7 +35,7 @@
       "absent_dates": []
     },
     {
-      "name": "CN Lab",
+      "name": "DAA Lab",
       "weekly_count": 2,
       "total_override": null,
       "absent_dates": []
@@ -41,7 +47,7 @@
       "absent_dates": []
     },
     {
-      "name": "DAA Lab",
+      "name": "CN Lab",
       "weekly_count": 2,
       "total_override": null,
       "absent_dates": []
@@ -55,6 +61,18 @@
     {
       "name": "Technical Skill",
       "weekly_count": 2,
+      "total_override": null,
+      "absent_dates": []
+    },
+    {
+      "name": "OE",
+      "weekly_count": 1,
+      "total_override": null,
+      "absent_dates": []
+    },
+    {
+      "name": "Mentor-Mentee Meeting",
+      "weekly_count": 1,
       "total_override": null,
       "absent_dates": []
     },

@@ -40,13 +40,28 @@ class SetupTab:
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
         
+        # Enable mouse wheel scrolling
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
         
         app_data = get_app_data()
         
-        # Batch Selection
-        batch_frame = tk.LabelFrame(scrollable_frame, text="Batch Selection", 
+        # Create 2-column layout for better space usage
+        left_column = ttk.Frame(scrollable_frame)
+        left_column.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E), padx=5, pady=5)
+        
+        right_column = ttk.Frame(scrollable_frame)
+        right_column.grid(row=0, column=1, sticky=(tk.N, tk.W, tk.E), padx=5, pady=5)
+        
+        scrollable_frame.columnconfigure(0, weight=1)
+        scrollable_frame.columnconfigure(1, weight=1)
+        
+        # Batch Selection (LEFT)
+        batch_frame = tk.LabelFrame(left_column, text="Batch Selection", 
                                     font=("Arial", 11, "bold"), padx=10, pady=10)
         batch_frame.pack(fill=tk.X, padx=10, pady=10)
         
@@ -55,8 +70,8 @@ class SetupTab:
         ttk.Radiobutton(batch_frame, text="B2/B4", variable=self.batch_var, value="B2/B4").pack(anchor=tk.W)
         ttk.Button(batch_frame, text="Update Batch", command=self.on_batch_update).pack(pady=5)
         
-        # Semester Dates
-        dates_frame = tk.LabelFrame(scrollable_frame, text="Semester Dates", 
+        # Semester Dates (LEFT)
+        dates_frame = tk.LabelFrame(left_column, text="Semester Dates", 
                                     font=("Arial", 11, "bold"), padx=10, pady=10)
         dates_frame.pack(fill=tk.X, padx=10, pady=10)
         
@@ -105,8 +120,8 @@ class SetupTab:
         ttk.Button(dates_frame, text="Save Dates", command=self.on_dates_update).grid(
             row=2, column=0, columnspan=2, pady=10)
         
-        # Holidays
-        holidays_frame = tk.LabelFrame(scrollable_frame, text="Holiday Periods", 
+        # Holidays (LEFT)
+        holidays_frame = tk.LabelFrame(left_column, text="Holiday Periods", 
                                       font=("Arial", 11, "bold"), padx=10, pady=10)
         holidays_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
@@ -122,8 +137,8 @@ class SetupTab:
         ttk.Button(btn_frame, text="➕ Add Holiday", command=self.add_holiday).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="➖ Remove Holiday", command=self.remove_holiday).pack(side=tk.LEFT, padx=5)
         
-        # Timetable Management Section
-        timetable_frame = tk.LabelFrame(scrollable_frame, text="Custom Timetable Management", 
+        # Timetable Management Section (RIGHT)
+        timetable_frame = tk.LabelFrame(right_column, text="Custom Timetable Management", 
                                         font=("Arial", 11, "bold"), padx=10, pady=10)
         timetable_frame.pack(fill=tk.X, padx=10, pady=10)
         
@@ -156,8 +171,8 @@ class SetupTab:
             command=self.reset_timetable
         ).pack(side=tk.LEFT, padx=5)
         
-        # Reset Data Section
-        reset_frame = tk.LabelFrame(scrollable_frame, text="Reset Data", 
+        # Reset Data Section (RIGHT)
+        reset_frame = tk.LabelFrame(right_column, text="Reset Data", 
                                     font=("Arial", 11, "bold"), padx=10, pady=10)
         reset_frame.pack(fill=tk.X, padx=10, pady=10)
         

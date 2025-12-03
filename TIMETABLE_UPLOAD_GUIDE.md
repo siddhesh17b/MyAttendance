@@ -15,38 +15,46 @@ Your CSV file should follow this structure:
 ```csv
 Day,Time,Subject
 MONDAY,09:00-10:00,Minor
-MONDAY,10:00-11:00,24HS03TH0301-DM (DT203)
-MONDAY,11:00-12:00,24CS01TH0302-DAA (DT203)
+MONDAY,10:00-11:00,DM
+MONDAY,11:00-12:00,DAA
 MONDAY,12:00-01:00,Lunch Break
-MONDAY,01:00-02:00,24CS01TH0301-TOC (DT203)
-MONDAY,02:00-03:00,24CS01TH0304-CN (DT203)
+MONDAY,01:00-02:00,TOC
+MONDAY,02:00-03:00,CN
 TUESDAY,09:00-10:00,Minor
-TUESDAY,10:00-11:00,24CS01TH0304-CN (DT203)
+TUESDAY,10:00-11:00,CN
 ...
 ```
 
 ### Important Rules:
 
-1. **Time Slots**: Use 8 hourly slots from 09:00 to 17:00
-   - 09:00-10:00, 10:00-11:00, 11:00-12:00, 12:00-01:00
-   - 01:00-02:00, 02:00-03:00, 03:00-04:00, 04:00-05:00
+1. **Time Slots**: ✅ **FLEXIBLE** - Use ANY time format you want!
+   - Common: 09:00-10:00, 10:00-11:00, etc.
+   - **Early classes**: 08:00-09:00, 07:00-08:00
+   - **Custom times**: 09:30-10:30, 14:15-15:15
+   - **Any duration**: 08:00-10:00, 13:00-16:00
+   - No limit on number of slots per day
 
-2. **Subject Format**:
-   - Simple: `DM`, `DAA`, `TOC`, `CN`
-   - With code: `24CS01TH0302-DAA (DT203)`
-   - Labs: `24CS01PR0304-CN Lab (DT105)`
-   - Batch-specific labs: `CN Lab (DT105) (B1&B3) / DAA Lab (DT111) (B2&B4)`
+2. **Subject Names**: ✅ **FULLY FLEXIBLE** - Use ANY subject name!
+   - **No more code extraction** - Names are kept as-is
+   - Simple: `Math`, `Physics`, `Chemistry`
+   - With codes: `CS101 - Data Structures`, `MATH201`
+   - With details: `Advanced Java Programming (Lab 3)`
+   - **Custom names**: Anything you want!
 
-3. **Special Entries**:
-   - `Lunch Break` - Ignored for attendance
-   - `Minor`, `MDM`, `OE`, `HONORS` - Tracked as subjects
-   - `Mentor-Mentee Meeting` - Ignored
+3. **Batch Names**: ✅ **CUSTOM BATCHES** - Not limited to B1/B3 or B2/B4!
+   - Still supports: `(B1&B3) / (B2&B4)` format
+   - Also works with: `(GroupA) / (GroupB)`, `(Section1) / (Section2)`
+   - **Any batch names** in parentheses
+
+4. **Special Entries**:
+   - `Lunch Break` or anything with "Lunch" - Ignored for attendance
    - Empty slots: Leave subject blank or use empty string
+   - **All other names are tracked** - No restrictions!
 
-4. **Batch-Aware Labs**:
-   - Format: `Subject1 (Location1) (B1&B3) / Subject2 (Location2) (B2&B4)`
-   - Example: `CN Lab (DT105) (B1&B3) / DAA Lab (DT111) (B2&B4)`
-   - App will automatically show correct lab based on batch selection
+5. **Batch-Aware Classes**:
+   - Format: `Subject1 (BatchA) / Subject2 (BatchB)`
+   - Example: `CN Lab (B1&B3) / DAA Lab (B2&B4)`
+   - Works with custom batch names too!
 
 ## How to Upload
 
@@ -75,10 +83,12 @@ TUESDAY,10:00-11:00,24CS01TH0304-CN (DT203)
 
 ## Subject Naming
 
-The app automatically extracts clean subject names:
-- `24CS01TH0302-DAA (DT203)` → `DAA`
-- `24CS01PR0304-CN Lab (DT105)` → `CN Lab`
-- `24HS03TH0301-DM (DT203)` → `DM`
+✅ **NEW: Full Flexibility!**
+The app now keeps subject names exactly as you enter them:
+- `Data Structures and Algorithms` → `Data Structures and Algorithms` (kept as-is)
+- `Math 101` → `Math 101`
+- `DM`, `DAA`, `TOC`, `CN` → Kept as-is
+- **Use ANY naming convention** you prefer!
 
 ## Troubleshooting
 

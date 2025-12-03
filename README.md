@@ -51,7 +51,10 @@ Imagine having a **smart assistant** that:
 - **Google Calendar-Style Interface**: Monthly grid view with intuitive color-coded days
 - **Smart Attendance Tracking**: All classes marked present by default, click to mark absent
 - **75% Threshold Calculator**: Real-time calculation of safe classes to skip
-- **Batch-Aware Timetable**: Supports B1/B3 and B2/B4 batch lab schedules
+- **Custom Timetable Upload**: ✨ **NEW!** Upload your own timetable via CSV
+- **Flexible Time Slots**: Support for ANY time slots (08:00-09:00, custom times, etc.)
+- **Custom Subject Names**: Use ANY subject names - no code extraction
+- **Custom Batch Names**: Not limited to B1/B3 - use any batch naming
 - **Holiday Management**: Mark individual days or date ranges as holidays
 - **Data Persistence**: All data stored locally in JSON format
 - **Reset Functionality**: Clear all data for new semester with one click
@@ -125,9 +128,13 @@ python app.py
 3. The app will automatically initialize all subjects from the timetable
 
 ### Setup Tab ⚙️
-- **Batch Selection**: Choose between B1/B3 or B2/B4
+- **Batch Selection**: Choose your batch (supports custom batch names via CSV)
 - **Semester Dates**: Set start and end dates using calendar widgets
 - **Holiday Management**: Add/remove holiday periods with names
+- **Custom Timetable Management**: ✨ **NEW!**
+  - 📥 Import Custom Timetable (CSV)
+  - 📤 Export Timetable Template
+  - 🔄 Reset to Default
 - **Reset Data**: Clear all holidays and absent dates (preserves batch and semester dates)
 
 ### Timetable Tab 📋
@@ -239,8 +246,8 @@ Edit the `TIMETABLE_DATA` dictionary in `data_manager.py`:
 ```python
 TIMETABLE_DATA = {
     "MONDAY": {
-        "09:00-10:00": "Subject Name",
-        "10:00-11:00": "24CS01TH0302-Subject (Room)",
+        "09:00-10:00": "DM",
+        "10:00-11:00": "DAA",
         # ... more slots
     },
     # ... more days

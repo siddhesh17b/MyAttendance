@@ -17,20 +17,20 @@ CUSTOM_TIMETABLE_FILE = "custom_timetable.json"
 TIMETABLE_DATA = {
     "MONDAY": {
         "09:00-10:00": "Minor",
-        "10:00-11:00": "24HS03TH0301-DM (DT203)",
-        "11:00-12:00": "24CS01TH0302-DAA (DT203)",
+        "10:00-11:00": "DM",
+        "11:00-12:00": "DAA",
         "12:00-01:00": "Lunch Break",
-        "01:00-02:00": "24CS01TH0301-TOC (DT203)",
-        "02:00-03:00": "24CS01TH0304-CN (DT203)",
+        "01:00-02:00": "TOC",
+        "02:00-03:00": "CN",
         "03:00-04:00": "",
         "04:00-05:00": ""
     },
     "TUESDAY": {
         "09:00-10:00": "Minor",
-        "10:00-11:00": "24CS01TH0304-CN (DT203)",
-        "11:00-12:00": "24CS01TH0301-TOC (DT203)",
+        "10:00-11:00": "CN",
+        "11:00-12:00": "TOC",
         "12:00-01:00": "Lunch Break",
-        "01:00-02:00": "24CS01TH0302-DAA (DT203)",
+        "01:00-02:00": "DAA",
         "02:00-03:00": "",
         "03:00-04:00": "",
         "04:00-05:00": ""
@@ -39,40 +39,40 @@ TIMETABLE_DATA = {
         "09:00-10:00": "Minor",
         "10:00-11:00": "",
         "11:00-12:00": "",
-        "12:00-01:00": "24HS03TH0301-DM (DT203)",
+        "12:00-01:00": "DM",
         "01:00-02:00": "Lunch Break",
-        "02:00-03:00": "24CS01TH0302-DAA (DT203)",
-        "03:00-04:00": "24CS01PR0304-CN Lab (DT105) (B1&B3) / DAA Lab (DT111) (B2&B4)",
-        "04:00-05:00": "24CS01PR0304-CN Lab (DT105) (B1&B3) / DAA Lab (DT111) (B2&B4)"
+        "02:00-03:00": "DAA",
+        "03:00-04:00": "CN Lab (B1&B3) / DAA Lab (B2&B4)",
+        "04:00-05:00": "CN Lab (B1&B3) / DAA Lab (B2&B4)"
     },
     "THURSDAY": {
         "09:00-10:00": "MDM",
         "10:00-11:00": "",
-        "11:00-12:00": "24HS03TH0301-DM (DT203)",
+        "11:00-12:00": "DM",
         "12:00-01:00": "Lunch Break",
-        "01:00-02:00": "24CS01TH0301-TOC (DT304)",
-        "02:00-03:00": "24CS01PR0304-CN Lab (DT105) (B2&B4) / DAA Lab (DT111) (B1&B3)",
-        "03:00-04:00": "24CS01PR0304-CN Lab (DT105) (B2&B4) / DAA Lab (DT111) (B1&B3)",
+        "01:00-02:00": "TOC",
+        "02:00-03:00": "CN Lab (B2&B4) / DAA Lab (B1&B3)",
+        "03:00-04:00": "CN Lab (B2&B4) / DAA Lab (B1&B3)",
         "04:00-05:00": ""
     },
     "FRIDAY": {
         "09:00-10:00": "MDM",
-        "10:00-11:00": "24CS01PR0303-Software Lab (DT105) (B1&B3) / Software Lab (DT111) (B2&B4)",
-        "11:00-12:00": "24CS01PR0303-Software Lab (DT105) (B1&B3) / Software Lab (DT111) (B2&B4)",
+        "10:00-11:00": "Software Lab (B1&B3) / Software Lab (B2&B4)",
+        "11:00-12:00": "Software Lab (B1&B3) / Software Lab (B2&B4)",
         "12:00-01:00": "Lunch Break",
-        "01:00-02:00": "24CS01TH0304-CN (DT212)",
-        "02:00-03:00": "Technical Skill session (DT109)",
-        "03:00-04:00": "Technical Skill session (DT109)",
+        "01:00-02:00": "CN",
+        "02:00-03:00": "Technical Skill",
+        "03:00-04:00": "Technical Skill",
         "04:00-05:00": ""
     },
     "SATURDAY": {
         "09:00-10:00": "MDM",
         "10:00-11:00": "OE",
-        "11:00-12:00": "Mentor-Mentee Meeting Slot",
-        "12:00-01:00": "HONORS (DT301)",  # 12:00-12:30 Lunch, 12:30-1:00 HONORS
-        "01:00-02:00": "HONORS (DT301)",
-        "02:00-03:00": "HONORS (DT301)",
-        "03:00-04:00": "HONORS (DT301)",  # Ends at 3:30
+        "11:00-12:00": "Mentor-Mentee Meeting",
+        "12:00-01:00": "HONORS",
+        "01:00-02:00": "HONORS",
+        "02:00-03:00": "HONORS",
+        "03:00-04:00": "HONORS",
         "04:00-05:00": ""
     }
 }
@@ -86,26 +86,17 @@ app_data = {
 }
 
 def extract_subject_name(cell_value):
+    """Extract subject name - now keeps full names, only excludes lunch/empty"""
     if not cell_value or cell_value.strip() == "":
         return None
     cell_value = cell_value.strip()
-    if "Lunch" in cell_value or cell_value == "":
+    
+    # Only exclude Lunch Break and empty cells
+    if "Lunch" in cell_value:
         return None
-    if cell_value in ["Minor", "OE"] or "Mentor-Mentee" in cell_value:
-        return None
-    if cell_value == "MDM":
-        return "MDM"
-    if "HONORS" in cell_value:
-        return "HONORS"
-    if "Technical Skill" in cell_value:
-        return "Technical Skill"
-    if "-" in cell_value:
-        parts = cell_value.split("-")
-        if len(parts) >= 2:
-            subject = parts[1].split("(")[0].strip()
-            if "Lab" in subject:
-                return subject.split("DT")[0].strip()
-            return subject
+    
+    # Return the full subject name as-is (no more code extraction)
+    # This allows ANY subject name, batch name, or course name
     return cell_value
 
 
@@ -229,12 +220,11 @@ def export_timetable_to_csv(filepath=None):
             writer.writerow(['Day', 'Time', 'Subject'])
             
             days_order = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
-            time_slots = ['09:00-10:00', '10:00-11:00', '11:00-12:00', '12:00-01:00',
-                         '01:00-02:00', '02:00-03:00', '03:00-04:00', '04:00-05:00']
             
             for day in days_order:
                 if day in active_timetable:
-                    for time_slot in time_slots:
+                    # Export all time slots dynamically (supports any time slots)
+                    for time_slot in sorted(active_timetable[day].keys()):
                         subject = active_timetable[day].get(time_slot, '')
                         writer.writerow([day, time_slot, subject])
         
@@ -259,12 +249,10 @@ def import_timetable_from_csv(filepath=None):
     try:
         new_timetable = {}
         required_days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
-        time_slots = ['09:00-10:00', '10:00-11:00', '11:00-12:00', '12:00-01:00',
-                     '01:00-02:00', '02:00-03:00', '03:00-04:00', '04:00-05:00']
         
-        # Initialize structure
+        # Initialize structure (no fixed time slots - dynamic based on CSV)
         for day in required_days:
-            new_timetable[day] = {slot: '' for slot in time_slots}
+            new_timetable[day] = {}
         
         # Read CSV
         with open(filepath, 'r', encoding='utf-8') as f:
@@ -284,10 +272,8 @@ def import_timetable_from_csv(filepath=None):
                     messagebox.showwarning("Warning", f"Invalid day: {day}. Skipping...")
                     continue
                 
-                if time not in time_slots:
-                    messagebox.showwarning("Warning", f"Invalid time slot: {time}. Skipping...")
-                    continue
-                
+                # Accept ANY time format (including 08:00-09:00, custom times, etc.)
+                # No validation - full flexibility
                 new_timetable[day][time] = subject
         
         # Validate all days present

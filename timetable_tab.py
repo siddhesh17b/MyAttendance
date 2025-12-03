@@ -63,7 +63,14 @@ class TimetableTab:
         self.batch_label.config(text=f"Current Batch: {batch}")
         for widget in self.timetable_frame.winfo_children():
             widget.destroy()
-        time_slots = ["09:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-01:00", "01:00-02:00", "02:00-03:00", "03:00-04:00", "04:00-05:00"]
+        
+        # Get dynamic time slots from active timetable
+        active_timetable = get_active_timetable()
+        time_slots_set = set()
+        for day_data in active_timetable.values():
+            time_slots_set.update(day_data.keys())
+        time_slots = sorted(list(time_slots_set))  # Supports ANY time slots including 08:00-09:00
+        
         days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
         ttk.Label(self.timetable_frame, text="Day", font=("Segoe UI", 10, "bold"), background="#ECEFF1", relief="solid", borderwidth=1, padding=8).grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=1, pady=1)
         

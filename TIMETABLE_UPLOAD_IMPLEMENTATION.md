@@ -156,16 +156,16 @@ MONDAY,10:00-11:00,Physics
 
 ### Subject Formats:
 - Simple: `Math`, `Physics`, `Chemistry`
-- With codes: `24CS01TH0302-DAA (DT203)`
-- Labs: `CN Lab (DT105)`
-- Batch-specific: `CN Lab (DT105) (B1&B3) / DAA Lab (DT111) (B2&B4)`
+- Clean names: `DM`, `DAA`, `TOC`, `CN`
+- Labs: `CN Lab`, `DAA Lab`, `Software Lab`
+- Batch-specific: `CN Lab (B1&B3) / DAA Lab (B2&B4)`
 - Special: `Lunch Break`, `Minor`, `MDM`, `OE`, `HONORS`
 
-### Subject Name Extraction:
-The app automatically extracts clean names:
-- `24CS01TH0302-DAA (DT203)` → `DAA`
-- `24CS01PR0304-CN Lab (DT105)` → `CN Lab`
-- Already clean names remain unchanged
+### Subject Name Handling:
+The app keeps all subject names as-is (NO EXTRACTION):
+- `Data Structures` → `Data Structures` (kept as-is)
+- `Math 101` → `Math 101` (kept as-is)
+- Only excludes names containing "Lunch"
 
 ## 🔧 Error Handling
 
