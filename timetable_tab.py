@@ -131,32 +131,66 @@ class TimetableTab:
         return cell_value.strip()
     
     def get_subject_colors(self, subject, time_slot):
-        """Get unique color for each subject using hash-based color generation"""
-        if subject in ["BREAK", "LUNCH"]:
-            return "#F5F5F5", "#757575"
-        if not subject:
-            return "#FFFFFF", "#000000"
+        """
+        Generate unique, visually distinct colors for each subject
         
-        # Generate unique color based on subject name with better distribution
+        Algorithm:
+        1. Creates 3 different hash values from subject name (normal, reverse, char sum)
+        2. Combines hashes to generate hue (0-360 degrees on color wheel)
+        3. Uses high saturation (0.6-0.8) for vibrant colors
+        4. Uses high value/brightness (0.85-0.95) for readability
+        5. Same subject always gets same color (deterministic hash)
+        
+        To modify colors:
+        - Adjust saturation range: Currently 0.6-0.8 (0=gray, 1=vivid)
+        - Adjust value range: Currently 0.85-0.95 (0=black, 1=white)
+        - Change hash multipliers (37, 17, 7) for different color distribution
+        
+        Args:
+            subject: Subject name string
+            time_slot: Time slot (unused, kept for compatibility)
+        
+        Returns:
+            tuple: (background_color, text_color) as hex strings
+        """
+        # Special cases: Lunch breaks and empty slots
+        if subject in ["BREAK", "LUNCH"]:
+            return "#F5F5F5", "#757575"  # Light gray background, dark gray text
+        if not subject:
+            return "#FFFFFF", "#000000"  # White background, black text
+        
+        # Import color conversion library
         import colorsys
         
-        # Use multiple hash components for better color distribution
-        hash1 = hash(subject)
-        hash2 = hash(subject[::-1])  # Reverse string hash
-        hash3 = sum(ord(c) for c in subject)
+        # Generate 3 different hash components for better distribution
+        hash1 = hash(subject)                    # Standard hash
+        hash2 = hash(subject[::-1])              # Reversed string hash
+        hash3 = sum(ord(c) for c in subject)    # Sum of character codes
         
-        # Combine hashes for better hue distribution (0-360)
+        # Combine hashes to get hue (0-360 degrees, converted to 0-1 range)
+        # Multipliers (37, 17, 7) are primes for better distribution
         hue = ((hash1 * 37 + hash2 * 17 + hash3 * 7) % 360) / 360.0
         
-        # Use higher saturation and medium-high value for more distinct colors
-        saturation = 0.6 + ((hash2 % 20) / 100.0)  # 0.6-0.8
-        value = 0.85 + ((hash3 % 10) / 100.0)      # 0.85-0.95
+        # Saturation: How vivid the color is (0.6-0.8 = vibrant but not neon)
+        saturation = 0.6 + ((hash2 % 20) / 100.0)  # Range: 0.6 to 0.8
         
+        # Value: How bright the color is (0.85-0.95 = light but colorful)
+        value = 0.85 + ((hash3 % 10) / 100.0)      # Range: 0.85 to 0.95
+        
+        # Convert HSV to RGB, then to hex color code
         rgb = colorsys.hsv_to_rgb(hue, saturation, value)
-        bg_color = "#{:02x}{:02x}{:02x}".format(int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255))
+        bg_color = "#{:02x}{:02x}{:02x}".format(
+            int(rgb[0] * 255), 
+            int(rgb[1] * 255), 
+            int(rgb[2] * 255)
+        )
         
-        # Generate contrasting text color
+        # Generate contrasting text color (darker version of same hue)
         text_rgb = colorsys.hsv_to_rgb(hue, min(1.0, saturation + 0.2), 0.3)
-        fg_color = "#{:02x}{:02x}{:02x}".format(int(text_rgb[0] * 255), int(text_rgb[1] * 255), int(text_rgb[2] * 255))
+        fg_color = "#{:02x}{:02x}{:02x}".format(
+            int(text_rgb[0] * 255), 
+            int(text_rgb[1] * 255), 
+            int(text_rgb[2] * 255)
+        )
         
         return bg_color, fg_color

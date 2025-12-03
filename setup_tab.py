@@ -255,25 +255,53 @@ class SetupTab:
             self.skipped_tree.insert("", tk.END, values=(skipped["name"], skipped["start"], skipped["end"]))
     
     def extract_batch_names(self):
-        """Extract batch names from timetable"""
+        """
+        Extract all unique batch names from timetable
+        
+        Scans timetable for entries like:
+        - \"CN Lab (B1&B3) / DAA Lab (B2&B4)\" → Extracts: B1&B3, B2&B4
+        - \"Software Lab (Group A) / Software Lab (Group B)\" → Extracts: Group A, Group B
+        
+        How it works:
+        1. Uses regex \\(([^)]+)\\) to find text inside parentheses
+        2. Filters out common words like \"Lab\", \"Tutorial\"
+        3. Returns unique sorted batch names
+        4. Falls back to default B1/B3, B2/B4 if none found
+        
+        To modify:
+        - Add more filter words to the exclusion list [\"Lab\", \"Tutorial\", ...]
+        - Change regex pattern for different parentheses formats
+        - Update fallback batch names
+        
+        Returns:
+            list: Sorted list of unique batch names
+        """
         batch_names = set()
         try:
             active_timetable = get_active_timetable()
+            
+            # Scan all days and time slots
             for day, time_slots_dict in active_timetable.items():
                 for time_slot, cell_value in time_slots_dict.items():
+                    # Skip empty cells and lunch breaks
                     if not cell_value or "Lunch" in cell_value:
                         continue
-                    # Extract batch names from parentheses
-                    matches = re.findall(r'\(([^)]+)\)', cell_value)
+                        
+                    # Extract all text inside parentheses using regex
+                    # Pattern: \\(([^)]+)\\) matches anything between ( and )
+                    matches = re.findall(r'\\(([^)]+)\\)', cell_value)
+                    
                     for match in matches:
-                        # Clean and add batch name
+                        # Clean whitespace and validate
                         batch_name = match.strip()
+                        # Exclude common non-batch words
                         if batch_name and batch_name not in ["Lab", "Tutorial"]:
                             batch_names.add(batch_name)
+                            
         except Exception as e:
             print(f"Error extracting batch names: {e}")
         
-        # Fallback to default if no batches found
+        # Fallback: Use default batches if none detected
         if not batch_names:
             batch_names = {"B1/B3", "B2/B4"}
         

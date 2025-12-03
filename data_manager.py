@@ -101,30 +101,63 @@ def extract_subject_name(cell_value):
 
 
 def parse_timetable_csv(batch):
+    """
+    Parse timetable and count weekly classes for each subject based on batch
+    
+    How it works:
+    1. Scans entire week's timetable
+    2. For shared slots with "/", extracts subject for selected batch only
+    3. Counts occurrences of each subject across the week
+    
+    Timetable cell formats:
+    - Single subject: "DAA" → Counted for all batches
+    - Batch-specific: "CN Lab (B1&B3) / DAA Lab (B2&B4)" → Filters by batch
+    
+    Args:
+        batch: Selected batch name (e.g., "B1/B3", "Group A")
+    
+    Returns:
+        dict: {subject_name: weekly_count}
+        Example: {"DAA": 3, "CN": 2, "CN Lab": 2}
+    
+    To modify batch matching:
+    - Change the condition: if f"({batch})" in part or batch in part
+    - Update format parsing in split operations
+    """
     subject_counts = defaultdict(int)
     try:
         if not batch:
             return {}
         
+        # Get active timetable (custom or default)
         active_timetable = get_active_timetable()
+        
+        # Iterate through all days and time slots
         for day, time_slots_dict in active_timetable.items():
             for time_slot, cell_value in time_slots_dict.items():
+                # Skip empty cells and lunch breaks
                 if not cell_value or cell_value == "Lunch Break":
                     continue
+                    
                 subject = extract_subject_name(cell_value)
                 if subject:
+                    # Check if this is a batch-specific entry (contains "/" and "()")
                     if "/" in cell_value and "(" in cell_value:
-                        # Dynamic batch matching - extract batch name from parentheses
+                        # Split by "/" to separate batch-specific subjects
+                        # Format: "Subject1 (Batch1) / Subject2 (Batch2)"
                         parts = cell_value.split("/")
                         for part in parts:
-                            # Check if this part contains the current batch name
+                            # Check if this part matches the selected batch
                             if f"({batch})" in part or batch in part:
+                                # Extract subject name (remove batch info)
                                 lab_subject = extract_subject_name(part.split("(")[0])
                                 if lab_subject:
                                     subject_counts[lab_subject] += 1
-                                    break
+                                    break  # Found match, move to next slot
                     else:
+                        # Common subject for all batches
                         subject_counts[subject] += 1
+                        
         return dict(subject_counts)
     except Exception as e:
         messagebox.showerror("Error", f"Failed to parse timetable: {str(e)}")

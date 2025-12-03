@@ -48,14 +48,23 @@ class BunkBuddyApp:
         # Initial tab will refresh on its own during creation
     
     def show_first_time_setup(self):
-        """Show setup wizard for first-time users"""
+        """
+        First-time setup wizard shown when app launches for the first time
+        Allows users to:
+        1. Import custom timetable CSV (optional)
+        2. Select their batch/group
+        
+        Note: Batch names are auto-detected from timetable entries with format:
+        "Subject (BatchA) / Subject (BatchB)"
+        """
+        # Create modal dialog window
         setup_window = tk.Toplevel(self.root)
         setup_window.title("Welcome to MyAttendance!")
         setup_window.geometry("500x350")
-        setup_window.transient(self.root)
-        setup_window.grab_set()
+        setup_window.transient(self.root)  # Set as child of main window
+        setup_window.grab_set()  # Make window modal (blocks interaction with parent)
         
-        # Center the window
+        # Center the window on screen
         setup_window.update_idletasks()
         width = 500
         height = 350
@@ -95,24 +104,39 @@ class BunkBuddyApp:
         batch_var = tk.StringVar()
         
         def update_batch_options():
-            # Clear existing radio buttons
+            """
+            Dynamically detect and display batch options from timetable
+            
+            How it works:
+            1. Scans all timetable entries for format: "Subject (BatchName) / Subject (BatchName2)"
+            2. Extracts batch names from parentheses using regex
+            3. Creates radio buttons for each unique batch found
+            4. Falls back to default B1/B3, B2/B4 if no batches detected
+            
+            To modify batch detection:
+            - Change regex pattern in re.findall() to match your format
+            - Update fallback batch names in the 'if not batch_names' block
+            """
+            # Clear existing radio buttons before recreating them
             for widget in batch_container.winfo_children():
                 widget.destroy()
             
-            # Detect batch names from timetable dynamically
+            # Get active timetable (custom if imported, otherwise default)
             from data_manager import get_active_timetable
             import re
             active_timetable = get_active_timetable()
             batch_names = set()
             
+            # Scan timetable for batch names in parentheses
             for day_data in active_timetable.values():
                 for cell_value in day_data.values():
                     if "/" in cell_value and "(" in cell_value:
-                        # Extract batch names from format like "Subject (Group A) / Subject (Group B)"
+                        # Extract batch names from format: "Subject (GroupA) / Subject (GroupB)"
+                        # Regex \(([^)]+)\) matches text inside parentheses
                         matches = re.findall(r'\(([^)]+)\)', cell_value)
                         batch_names.update(matches)
             
-            # If no batch names found, use default B1/B3 and B2/B4
+            # Fallback: If no batches found, use default batches
             if not batch_names:
                 batch_names = ["B1/B3", "B2/B4"]
             else:
@@ -127,16 +151,33 @@ class BunkBuddyApp:
         update_batch_options()
         
         def save_and_close():
+            """
+            Validate selection and initialize app data
+            
+            Validation steps:
+            1. Check if batch is selected
+            2. Parse timetable to get subjects for selected batch
+            3. Ensure subjects exist (prevents empty subject list)
+            4. Initialize all subjects with empty absent_dates (present by default)
+            
+            To add custom validation:
+            - Add checks before the app_data initialization
+            - Show error messages using messagebox.showerror()
+            """
             from tkinter import messagebox
             
             selected_batch = batch_var.get()
+            
+            # Validation 1: Ensure batch is selected
             if not selected_batch:
                 messagebox.showerror("Error", "Please select a batch/group before continuing!")
                 return
             
-            # Initialize subjects from timetable
+            # Parse timetable to extract subjects for this batch
+            # Returns dict: {subject_name: weekly_class_count}
             weekly_counts = parse_timetable_csv(selected_batch)
             
+            # Validation 2: Ensure subjects exist for selected batch
             if not weekly_counts:
                 messagebox.showerror(
                     "Error", 
