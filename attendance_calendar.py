@@ -18,12 +18,14 @@ from datetime import datetime, date
 from data_manager import get_app_data, save_data, get_subjects_for_day
 
 # Color scheme for day status
-COLOR_PRESENT = "#E8F5E9"  # Light green - all classes present
-COLOR_ABSENT = "#FFEBEE"   # Light red - some classes absent  
-COLOR_HOLIDAY = "#FFF9C4"  # Light yellow - holiday
-COLOR_TODAY = "#E3F2FD"    # Light blue - current day
-COLOR_WEEKEND = "#F5F5F5"  # Light gray - weekend
-COLOR_FUTURE = "#FAFAFA"   # Very light gray - future dates
+COLOR_PRESENT = "#ACDAAD"  #  all classes present
+COLOR_ABSENT = "#8CDEE9"   # some classes absent
+COLOR_SKIPPED = "#EF5350"  # ALL classes absent (completely skipped)
+COLOR_HOLIDAY = "#FCF3A7"  # holiday
+COLOR_TODAY = "#A7D9FD"    # current day
+COLOR_WEEKEND = "#C9C9C9"  # weekend
+COLOR_FUTURE = "#FFFFFF"   # future dates (outside semester)
+COLOR_FUTURE_IN_SEM = "#C0C8F8"  #  future dates within semester
 
 
 class AttendanceCalendar:
@@ -81,6 +83,13 @@ class AttendanceCalendar:
         
         ttk.Button(header_frame, text="Today", width=8,
                   command=self.go_to_today).pack(side=tk.LEFT, padx=20)
+        
+        # Hint for right-click functionality
+        hint_label = ttk.Label(header_frame, 
+                              text="💡 Tip: Right-click any date to instantly mark entire day as absent",
+                              foreground="#666666",
+                              font=("Segoe UI", 9))
+        hint_label.pack(side=tk.LEFT, padx=30)
     
     def create_calendar_container(self, parent):
         """Create scrollable calendar grid container"""
@@ -104,6 +113,12 @@ class AttendanceCalendar:
         
         self.calendar_frame.bind("<Configure>", configure_scroll)
         canvas.bind("<Configure>", configure_scroll)
+        
+        # Enable mouse wheel scrolling on calendar
+        def _on_calendar_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind("<MouseWheel>", _on_calendar_mousewheel)
+        self.calendar_frame.bind("<MouseWheel>", _on_calendar_mousewheel)
     
     def create_side_panel(self, parent):
         """Create side panel for subject selection"""
@@ -123,15 +138,16 @@ class AttendanceCalendar:
         legend_frame = ttk.LabelFrame(parent, text="Legend", padding=10)
         legend_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), padx=10, pady=10)
         
-        legends = [
+        legend_items = [
             ("All Present", COLOR_PRESENT),
             ("Some Absent", COLOR_ABSENT),
+            ("Completely Skipped", COLOR_SKIPPED),
             ("Holiday", COLOR_HOLIDAY),
             ("Today", COLOR_TODAY),
-            ("Sunday/Future", COLOR_WEEKEND)
+            ("Sunday/Future", COLOR_FUTURE)
         ]
         
-        for idx, (label, color) in enumerate(legends):
+        for idx, (label, color) in enumerate(legend_items):
             frame = ttk.Frame(legend_frame)
             frame.pack(side=tk.LEFT, padx=10)
             
@@ -142,6 +158,25 @@ class AttendanceCalendar:
             color_box.pack(side=tk.LEFT, padx=3)
             
             ttk.Label(frame, text=label, font=("Segoe UI", 9)).pack(side=tk.LEFT)
+        
+        # GitHub link at bottom
+        github_frame = ttk.Frame(parent)
+        github_frame.grid(row=3, column=0, columnspan=2, sticky=(tk.W, tk.E), padx=10, pady=(0, 5))
+        
+        github_label = tk.Label(
+            github_frame,
+            text="Made by Siddhesh Bisen | GitHub: https://github.com/siddhesh17b",
+            font=("Segoe UI", 9),
+            foreground="#666666",
+            cursor="hand2"
+        )
+        github_label.pack()
+        
+        # Make link clickable
+        def open_github(event):
+            import webbrowser
+            webbrowser.open("https://github.com/siddhesh17b")
+        github_label.bind("<Button-1>", open_github)
     
     def prev_month(self):
         """Navigate to previous month"""
@@ -167,26 +202,30 @@ class AttendanceCalendar:
         self.refresh()
     
     def on_date_clicked(self, date_str):
-        """Handle left-click on date - show subjects panel"""
+        """Handle date click - show subjects for that date"""
         app_data = get_app_data()
         
-        # Validate semester dates
-        if not app_data.get("semester_start") or not app_data.get("semester_end"):
-            messagebox.showwarning("Warning", "Please set semester dates in Setup tab first")
-            return
-        
-        if not (app_data["semester_start"] <= date_str <= app_data["semester_end"]):
-            messagebox.showinfo("Info", "Selected date is outside semester period")
-            return
-        
-        # Check if future date
+        # Check if date is in the future
         today = datetime.now().strftime("%Y-%m-%d")
         if date_str > today:
-            messagebox.showinfo("Info", "Cannot mark attendance for future dates")
+            messagebox.showinfo("Info", "Cannot mark attendance for future dates.\nYou can still mark holidays using the holiday button.")
             return
         
+        # Validate semester dates
+        semester_start = app_data.get("semester_start")
+        semester_end = app_data.get("semester_end")
+        if semester_start and semester_end:
+            if not (semester_start <= date_str <= semester_end):
+                messagebox.showinfo("Info", "Cannot mark attendance outside semester period")
+                return
+        
         # Get subjects for this day
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+        try:
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+        except ValueError:
+            messagebox.showerror("Error", "Invalid date format")
+            return
+        
         day_name = date_obj.strftime("%A").upper()
         batch = app_data.get("batch", "B1/B3")
         subjects = get_subjects_for_day(day_name, batch)
@@ -202,11 +241,29 @@ class AttendanceCalendar:
         self.show_subjects_panel(date_str, subjects)
     
     def on_date_right_clicked(self, date_str):
-        """Handle right-click on date - mark all classes as absent"""
+        """Handle right-click on date - toggle between all absent and all present"""
         app_data = get_app_data()
         
+        # Check if date is in the future - use date objects for accurate comparison
+        today = date.today()
+        try:
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return
+        
+        if date_obj > today:
+            messagebox.showinfo("Info", "Cannot mark attendance for future dates.\nYou can mark holidays, but not attendance.")
+            return
+        
+        # Validate semester dates
+        semester_start = app_data.get("semester_start")
+        semester_end = app_data.get("semester_end")
+        if semester_start and semester_end:
+            if not (semester_start <= date_str <= semester_end):
+                messagebox.showinfo("Info", "Cannot mark attendance outside semester period")
+                return
+        
         # Get subjects for this day
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
         day_name = date_obj.strftime("%A").upper()
         batch = app_data.get("batch", "B1/B3")
         subjects = get_subjects_for_day(day_name, batch)
@@ -214,23 +271,78 @@ class AttendanceCalendar:
         if not subjects:
             return
         
-        # Mark all subjects as absent for this date
+        # Check if ALL subjects (including multiple occurrences) are already absent
+        all_absent = True
         for subject in subjects:
             subject_data = next((s for s in app_data["subjects"] if s["name"] == subject), None)
             if subject_data:
-                if "absent_dates" not in subject_data:
-                    subject_data["absent_dates"] = []
-                if date_str not in subject_data["absent_dates"]:
+                absent_dates = subject_data.get("absent_dates", [])
+                # For subjects with multiple classes, check if date appears correct number of times
+                subject_count_on_day = subjects.count(subject)
+                absent_count_for_date = absent_dates.count(date_str)
+                if absent_count_for_date < subject_count_on_day:
+                    all_absent = False
+                    break
+            else:
+                all_absent = False
+                break
+        
+        # Initialize skipped_days if not exists
+        if "skipped_days" not in app_data:
+            app_data["skipped_days"] = []
+        
+        if all_absent:
+            # Already completely skipped - make all present (remove ALL absences for this date)
+            for subject in subjects:
+                subject_data = next((s for s in app_data["subjects"] if s["name"] == subject), None)
+                if subject_data:
+                    # Remove ALL occurrences of this date (in case subject appears multiple times)
+                    while date_str in subject_data.get("absent_dates", []):
+                        subject_data["absent_dates"].remove(date_str)
+            
+            # Remove from skipped_days list
+            app_data["skipped_days"] = [
+                skipped for skipped in app_data["skipped_days"]
+                if not (skipped["start"] == date_str and skipped["end"] == date_str)
+            ]
+        else:
+            # Not completely skipped - mark ALL occurrences of all subjects as absent
+            for subject in subjects:
+                subject_data = next((s for s in app_data["subjects"] if s["name"] == subject), None)
+                if subject_data:
+                    if "absent_dates" not in subject_data:
+                        subject_data["absent_dates"] = []
+                    # Add date (will be added once per occurrence in subjects list)
                     subject_data["absent_dates"].append(date_str)
+            
+            # Add to skipped_days list (single day)
+            formatted_date = date_obj.strftime("%d %b %Y")
+            if not any(skipped["start"] == date_str and skipped["end"] == date_str 
+                      for skipped in app_data["skipped_days"]):
+                app_data["skipped_days"].append({
+                    "name": f"Right-click: {formatted_date}",
+                    "start": date_str,
+                    "end": date_str
+                })
         
         save_data()
         self.refresh()
         self.refresh_all_tabs()
-        messagebox.showinfo("Success", f"Marked all classes as absent for {date_str}")
     
     def show_subjects_panel(self, date_str, subjects):
         """Display subjects with checkboxes in side panel"""
         app_data = get_app_data()
+        
+        # Validate inputs
+        if not subjects or not isinstance(subjects, list):
+            self.clear_subjects_panel()
+            return
+        
+        # Validate app_data has subjects
+        if not app_data.get("subjects"):
+            messagebox.showerror("Error", "No subjects found in app data. Please reconfigure in Setup tab.")
+            self.clear_subjects_panel()
+            return
         
         # Clear panel
         for widget in self.subjects_panel.winfo_children():
@@ -326,23 +438,40 @@ class AttendanceCalendar:
         subjects_frame.bind("<Configure>", configure_subjects_scroll)
         subjects_canvas.bind("<Configure>", configure_subjects_scroll)
         
-        # Create checkboxes for each subject
-        for subject in subjects:
+        # Enable mouse wheel scrolling on subjects panel
+        def _on_mousewheel(event):
+            subjects_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        subjects_canvas.bind("<MouseWheel>", _on_mousewheel)
+        subjects_frame.bind("<MouseWheel>", _on_mousewheel)
+        
+        # Create checkboxes for each subject (with occurrence tracking for duplicates)
+        # Count occurrences of each subject
+        subject_occurrence_count = {}
+        for idx, subject in enumerate(subjects):
             subject_data = next((s for s in app_data["subjects"] if s["name"] == subject), None)
+            
+            # Track occurrence number for subjects that appear multiple times
+            occurrence = subject_occurrence_count.get(subject, 0) + 1
+            subject_occurrence_count[subject] = occurrence
+            
+            # Create unique key for subjects that appear multiple times
+            subject_key = f"{subject}__occurrence_{occurrence}" if subjects.count(subject) > 1 else subject
             
             # Check if currently marked absent
             is_present = True
             if subject_data and date_str in subject_data.get("absent_dates", []):
                 is_present = False
             
-            # Create and store checkbox variable
+            # Create and store checkbox variable with unique key
             var = tk.BooleanVar(value=is_present)
-            self.check_vars[subject] = var
+            self.check_vars[subject_key] = var
             
             frame = ttk.Frame(subjects_frame)
             frame.pack(fill=tk.X, padx=5, pady=5)
             
-            cb = ttk.Checkbutton(frame, text=subject, variable=var)
+            # Show occurrence number if subject appears multiple times
+            display_text = f"{subject} (Class #{occurrence})" if subjects.count(subject) > 1 else subject
+            cb = ttk.Checkbutton(frame, text=display_text, variable=var)
             cb.pack(side=tk.LEFT)
             
             # Status indicator
@@ -371,8 +500,12 @@ class AttendanceCalendar:
         app_data = get_app_data()
         
         # Update absent_dates for each subject based on checkbox state
-        for subject, var in self.check_vars.items():
-            subject_data = next((s for s in app_data["subjects"] if s["name"] == subject), None)
+        # Handle subjects with multiple occurrences (e.g., "Physics Lab__occurrence_1")
+        for subject_key, var in self.check_vars.items():
+            # Extract actual subject name (remove occurrence suffix if present)
+            subject_name = subject_key.split("__occurrence_")[0] if "__occurrence_" in subject_key else subject_key
+            
+            subject_data = next((s for s in app_data["subjects"] if s["name"] == subject_name), None)
             if not subject_data:
                 continue
             
@@ -382,11 +515,10 @@ class AttendanceCalendar:
             is_present = var.get()
             
             if not is_present:
-                # Mark as absent - add to absent_dates if not already there
-                if date_str not in subject_data["absent_dates"]:
-                    subject_data["absent_dates"].append(date_str)
+                # Mark as absent - add to absent_dates (can have multiple entries for same date)
+                subject_data["absent_dates"].append(date_str)
             else:
-                # Mark as present - remove from absent_dates if exists
+                # Mark as present - remove ONE occurrence from absent_dates if exists
                 if date_str in subject_data["absent_dates"]:
                     subject_data["absent_dates"].remove(date_str)
         
@@ -432,6 +564,18 @@ class AttendanceCalendar:
             holidays.remove(existing_holiday)
             messagebox.showinfo("Updated", "Date marked as regular day")
         else:
+            # Validate date is within semester when adding
+            semester_start = app_data.get("semester_start")
+            semester_end = app_data.get("semester_end")
+            if semester_start and semester_end:
+                if not (semester_start <= date_str <= semester_end):
+                    messagebox.showerror(
+                        "Error",
+                        f"Cannot mark holiday outside semester period.\n"
+                        f"Semester: {semester_start} to {semester_end}"
+                    )
+                    return
+            
             # Add as single-day holiday
             holidays.append({
                 "start": date_str,
@@ -457,7 +601,7 @@ class AttendanceCalendar:
         return False
     
     def get_day_status(self, date_str):
-        """Get the status of a day (present/absent/holiday/no_class)"""
+        """Get the status of a day (present/absent/skipped/holiday/no_class)"""
         app_data = get_app_data()
         
         # Check if date is within semester range
@@ -478,18 +622,37 @@ class AttendanceCalendar:
         if not subjects:
             return "no_class"
         
-        # Check if any subject has absence on this date
+        # Check if ALL subjects are absent (completely skipped day)
+        # For subjects with multiple classes per day, need to check count matches
+        all_absent = True
         has_absent = False
         for subject in subjects:
             subject_data = next((s for s in app_data["subjects"] if s["name"] == subject), None)
-            if subject_data and date_str in subject_data.get("absent_dates", []):
-                has_absent = True
-                break
+            if subject_data:
+                absent_dates = subject_data.get("absent_dates", [])
+                # Count how many times this subject appears on this day
+                subject_count_on_day = subjects.count(subject)
+                # Count how many times this date appears in absent_dates for this subject
+                absent_count_for_date = absent_dates.count(date_str)
+                
+                if absent_count_for_date > 0:
+                    has_absent = True
+                # Only considered fully absent if ALL occurrences are marked absent
+                if absent_count_for_date < subject_count_on_day:
+                    all_absent = False
+            else:
+                all_absent = False
+        
+        if all_absent and has_absent:
+            return "skipped"  # All subjects absent
         
         return "absent" if has_absent else "present"
     
     def draw_calendar(self):
         """Draw the monthly calendar grid"""
+        # Defer widget destruction for smoother rendering
+        self.calendar_frame.update_idletasks()
+        
         # Clear existing calendar
         for widget in self.calendar_frame.winfo_children():
             widget.destroy()
@@ -550,12 +713,28 @@ class AttendanceCalendar:
                     bg_color = COLOR_TODAY
                 elif day_idx == 6:  # Sunday only (Saturday has classes)
                     bg_color = COLOR_WEEKEND
-                elif date_obj <= today:
+                elif date_obj > today:
+                    # Future dates - different colors for in-semester vs outside
+                    app_data = get_app_data()
+                    semester_start = app_data.get("semester_start")
+                    semester_end = app_data.get("semester_end")
+                    if semester_start and semester_end and semester_start <= date_str <= semester_end:
+                        # Future date within semester - use distinct color
+                        if self.is_holiday_date(date_str):
+                            bg_color = COLOR_HOLIDAY  # Show holidays even in future
+                        else:
+                            bg_color = COLOR_FUTURE_IN_SEM  # Light indigo for future dates in semester
+                    else:
+                        bg_color = COLOR_FUTURE  # White for outside semester
+                else:
+                    # Past dates - show actual status
                     status = self.get_day_status(date_str)
                     if status == "no_class":
                         bg_color = COLOR_FUTURE  # Outside semester or no classes
                     elif status == "holiday":
                         bg_color = COLOR_HOLIDAY
+                    elif status == "skipped":
+                        bg_color = COLOR_SKIPPED  # All classes absent
                     elif status == "absent":
                         bg_color = COLOR_ABSENT
                     elif status == "present":

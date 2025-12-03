@@ -24,42 +24,79 @@ def parse_date(date_str):
 
 
 def is_date_in_holidays(date, holidays):
-    """Check if a date falls within any holiday period"""
+    """Check if a date falls within any holiday period
+    
+    Args:
+        date: datetime object to check
+        holidays: List of holiday dicts with 'start' and 'end' keys
+    
+    Returns:
+        bool: True if date is within any holiday period
+    """
+    if not date or not holidays:
+        return False
+    
     for holiday in holidays:
-        start = parse_date(holiday['start'])
-        end = parse_date(holiday['end'])
-        if start and end:
-            if start <= date <= end:
+        try:
+            start = parse_date(holiday.get('start'))
+            end = parse_date(holiday.get('end'))
+            if start and end and start <= date <= end:
                 return True
+        except (KeyError, TypeError, AttributeError):
+            # Skip malformed holiday entries
+            continue
     return False
 
 
 def calculate_weeks_elapsed(start_date_str, end_date_str, holidays):
-    """Calculate number of weeks between start and end, excluding holidays"""
+    """
+    Calculate number of weeks between start and end dates, excluding holidays
+    
+    How it works:
+    1. Calculate total days in semester
+    2. Find overlapping days between holidays and semester period
+    3. Subtract holiday days from total
+    4. Convert effective days to weeks (divide by 7)
+    
+    Args:
+        start_date_str: Semester start date (YYYY-MM-DD format)
+        end_date_str: Current/end date (YYYY-MM-DD format)
+        holidays: List of holiday dicts with 'start' and 'end' keys
+    
+    Returns:
+        float: Number of effective weeks (excluding holidays)
+    
+    Example:
+        Semester: Jan 1 - Jan 31 (31 days = 4.43 weeks)
+        Holiday: Jan 15 - Jan 20 (6 days)
+        Result: 25 effective days = 3.57 weeks
+    """
     start = parse_date(start_date_str)
     end = parse_date(end_date_str)
     
     if not start or not end:
         return 0
     
-    # Count total days
+    # Count total days in period (inclusive)
     total_days = (end - start).days + 1
     
-    # Subtract holiday days
+    # Subtract holiday days that overlap with semester period
     holiday_days = 0
     for holiday in holidays:
         h_start = parse_date(holiday['start'])
         h_end = parse_date(holiday['end'])
         if h_start and h_end:
-            # Find overlap with semester period
+            # Find overlap: max of starts, min of ends
             overlap_start = max(start, h_start)
             overlap_end = min(end, h_end)
+            # Only count if there's actual overlap
             if overlap_start <= overlap_end:
                 holiday_days += (overlap_end - overlap_start).days + 1
     
-    effective_days = total_days - holiday_days
+    # Calculate effective teaching days
+    effective_days = max(0, total_days - holiday_days)  # Never negative
     weeks = effective_days / 7.0
-    return weeks
+    return max(0, weeks)  # Never return negative weeks
 
 
 def calculate_total_classes(weekly_count, weeks):
@@ -75,14 +112,44 @@ def calculate_attendance(attended, total):
 
 
 def calculate_safe_skip(attended, total, threshold=75):
-    """Calculate how many classes can be safely skipped"""
-    if total == 0:
+    """
+    Calculate how many classes can be safely skipped while maintaining threshold
+    
+    Formula derivation:
+    - Requirement: attendance% >= 75%
+    - After skipping 'x' classes: attended / (total + x) >= 0.75
+    - Rearranging: attended >= 0.75 * (total + x)
+    - Solve for x: x <= (attended - 0.75 * total) / 0.75
+    
+    Args:
+        attended: Number of classes attended so far
+        total: Total classes conducted so far
+        threshold: Minimum attendance percentage required (default 75%)
+    
+    Returns:
+        int: Maximum number of classes that can be skipped safely
+    
+    Example:
+        Attended: 80 classes, Total: 100 classes
+        Current %: 80%
+        Safe skip: (80 - 0.75*100) / 0.75 = (80 - 75) / 0.75 = 6.67 ≈ 6 classes
+        After skipping 6: 80/(100+6) = 75.47% (still safe)
+    """
+    # Edge case validation
+    if total == 0 or attended < 0 or total < 0:
         return 0
     
-    # Formula: safe_skip = floor((attended - 0.75 * (total + skips)) / 0.25)
-    # Rearranging: skips = (attended - 0.75 * total) / 0.75
-    safe = int((attended - threshold/100 * total) / (threshold/100))
-    return max(0, safe)
+    if threshold <= 0 or threshold > 100:
+        threshold = 75  # Default fallback
+    
+    # Calculate maximum classes that can be skipped
+    # Formula: skips = (attended - threshold% * total) / threshold%
+    try:
+        threshold_decimal = threshold / 100.0
+        safe = int((attended - threshold_decimal * total) / threshold_decimal)
+        return max(0, safe)  # Never return negative
+    except (ZeroDivisionError, OverflowError):
+        return 0
 
 
 def get_attendance_status(percentage):

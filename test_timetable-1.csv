@@ -1,0 +1,43 @@
+Day,Time,Subject
+MONDAY,08:00-09:00,Physics
+MONDAY,09:00-10:00,Mathematics
+MONDAY,10:00-11:00,Chemistry
+MONDAY,11:00-12:00,Biology
+MONDAY,12:00-01:00,Lunch Break
+MONDAY,01:00-02:00,English Literature
+MONDAY,02:00-03:00,Computer Science (Group A) / Economics (Group B)
+MONDAY,03:00-04:00,History
+TUESDAY,08:30-10:00,Physics Lab (Group A) / Chemistry Lab (Group B)
+TUESDAY,10:00-11:00,Mathematics
+TUESDAY,11:00-12:00,English Literature
+TUESDAY,12:00-01:00,Lunch Break
+TUESDAY,01:00-02:30,Chemistry Lab (Group B) / Physics Lab (Group A)
+TUESDAY,02:30-04:00,Computer Science Lab (Group A) / Economics Tutorial (Group B)
+WEDNESDAY,08:00-09:00,Biology
+WEDNESDAY,09:00-10:00,Computer Science (Group A) / Economics (Group B)
+WEDNESDAY,10:00-11:00,History
+WEDNESDAY,11:00-12:00,Mathematics
+WEDNESDAY,12:00-01:00,Lunch Break
+WEDNESDAY,01:00-02:00,Chemistry
+WEDNESDAY,02:00-03:00,Physics
+WEDNESDAY,03:00-04:00,English Literature
+THURSDAY,07:30-09:00,Biology Lab (Group A) / History Project (Group B)
+THURSDAY,09:00-10:00,Mathematics
+THURSDAY,10:00-11:00,Chemistry
+THURSDAY,11:00-12:00,Computer Science (Group A) / Economics (Group B)
+THURSDAY,12:00-01:00,Lunch Break
+THURSDAY,01:00-02:30,History Project (Group A) / Biology Lab (Group B)
+THURSDAY,02:30-04:00,English Literature
+FRIDAY,08:00-09:00,Physics
+FRIDAY,09:00-10:00,Mathematics
+FRIDAY,10:00-11:00,Chemistry
+FRIDAY,11:00-12:00,Biology
+FRIDAY,12:00-01:00,Lunch Break
+FRIDAY,01:00-02:00,Computer Science (Group A) / Economics (Group B)
+FRIDAY,02:00-03:00,History
+FRIDAY,03:00-04:00,English Literature
+SATURDAY,09:30-11:00,Mathematics Tutorial
+SATURDAY,11:00-12:30,Physics Revision
+SATURDAY,12:30-01:00,Lunch Break
+SATURDAY,01:00-02:30,Chemistry Practical (Group A) / Computer Science Project (Group B)
+SATURDAY,02:30-04:00,Computer Science Project (Group A) / Chemistry Practical (Group B)
