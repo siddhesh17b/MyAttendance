@@ -1,120 +1,133 @@
 # MyAttendance
 
-**Track your college attendance. Know exactly how many classes you can skip while staying above 75%.**
+**Track your college attendance and know exactly how many classes you can skip.**
 
-![Setup Tab](setup_tab.png)
-![Calendar Tab](mark_attendance_tab.png)
+Most colleges require **75% minimum attendance**. Fall below and you can't sit for exams. This app helps you stay above that line.
+
+![Mark Attendance Tab](screenshots/mark_attendance_tab.png)
 
 ---
 
-## Quick Start
+## What This Does
 
-```bash
+You tell it your class schedule. It tracks which days you were absent. It tells you:
+- Your current attendance %
+- How many more classes you can safely skip
+- Which subjects are at risk (below 75%)
+
+---
+
+## First Time Setup
+
+### Step 1: Install Python
+Download from [python.org](https://python.org). During install, **check "Add Python to PATH"**.
+
+### Step 2: Get the App
+Download this folder (green "Code" button → "Download ZIP") and extract it.
+
+### Step 3: Install the Calendar Widget
+Open terminal in the app folder and run:
+```
 pip install tkcalendar
+```
+
+### Step 4: Run It
+```
 python app.py
 ```
 
-First run? The app walks you through setup. Import your timetable CSV or use the default, pick your batch, set semester dates. Done.
+---
+
+## First Run: What You'll See
+
+1. **Batch Selection Popup** - Choose your batch (like B1, B2, Group A, etc.)
+   - *What's a batch?* If your class is divided into groups for labs, that's your batch
+   - If your college doesn't have batches, just pick any option
+
+2. **Setup Tab** - Set your semester dates
+   - Pick semester start and end dates (check your college calendar)
+   - Add holidays (Diwali break, etc.)
+
+![Setup Tab](screenshots/setup_tab.png)
+
+3. **You're done!** The app now knows your schedule.
 
 ---
 
-## How It Works
+## Daily Use
 
-1. **You're present by default** — Only mark when you're absent
-2. **Left-click a date** → Uncheck the classes you missed → Save
-3. **Right-click a date** → Skip entire day instantly (click again to undo)
-4. **Check Summary tab** → See which subjects are safe 🟢 and which are at risk 🔴
+### Mark Absences (Attendance Tab)
+- **Left-click a date** → Opens side panel to mark specific subjects absent
+- **Right-click a date** → Marks the ENTIRE day absent (quick option when you bunked everything)
 
-That's the whole app.
-
----
-
-## Your Timetable
-
-### Option 1: Import Your Own (Recommended)
-
-Go to **Setup → Export Timetable Template** to get a CSV file. Edit it:
-
-```csv
-Day,Time,Subject
-MONDAY,09:00-10:00,Data Structures
-MONDAY,10:00-11:00,Algorithms
-TUESDAY,02:00-04:00,Lab (Group A) / Lab (Group B)
-```
-
-- **Day**: MONDAY through SATURDAY (uppercase)
-- **Time**: Any format works (08:00-09:00, 2-3pm, whatever)
-- **Subject**: Any name. For batch-specific: `Subject (BatchA) / Subject (BatchB)`
-
-Import it back via **Setup → Import Custom Timetable**. App auto-detects your batch options.
-
-### Option 2: Use Default
-
-Just select your batch (B1/B3 or B2/B4) and go. You can always import your own later.
-
----
-
-## Calendar Colors
-
+The calendar shows:
 | Color | Meaning |
 |-------|---------|
-| White/Green | All present |
-| Cyan | Some absent |
-| Dark Red | Completely skipped |
+| Green | All classes attended |
+| Pink | Some classes missed |
+| Dark Red | Whole day absent |
 | Yellow | Holiday |
-| Gray | Sunday or future |
+| Blue | Today |
+
+### Check Your Status (Summary Tab)
+See all subjects with:
+- Current attendance %
+- Classes you can still skip
+- 🟢 Safe / 🔴 At Risk indicators
 
 ---
 
-## Common Tasks
+## Your Weekly Schedule (Timetable Tab)
 
-| Task | How |
-|------|-----|
-| Mark absent | Left-click date → uncheck subjects → Save |
-| Skip entire day | Right-click the date |
-| Add holiday | Setup → Add Holiday Period |
-| Sick leave (multi-day) | Setup → Add Skipped Period |
-| Fix wrong count | Summary → double-click subject → override manually |
-| New semester | Setup → Reset Data |
+View your entire week at a glance. Each subject gets a unique color.
+
+![Timetable Tab](screenshots/timetable_tab.png)
 
 ---
 
-## Summary Tab
+## Using Your Own Timetable
 
-Your dashboard. Shows for each subject:
-- Classes attended / total
-- Attendance percentage  
-- **How many more you can skip** (the number you actually want)
-- Color-coded status (green = safe, red = danger)
+The app has a default timetable built-in. To use your own:
 
-Double-click any row to manually override if classes got cancelled or rescheduled.
+1. Go to **Setup Tab** → Click **Export Timetable Template**
+2. Open the CSV file, edit it with your schedule
+3. Click **Import Custom Timetable** and select your file
+
+📖 **[Full Timetable Guide →](COMPLETE_GUIDE.md)** - Detailed CSV format, batch-specific classes, troubleshooting
+
+### CSV Format (3 columns, no header row):
+```
+MONDAY,09:00-10:00,Mathematics
+MONDAY,10:00-11:00,Physics
+TUESDAY,09:00-10:00,Chemistry
+```
+
+For batch-specific classes:
+```
+MONDAY,02:00-04:00,Physics Lab (B1) / Chemistry Lab (B2)
+```
 
 ---
 
 ## Troubleshooting
 
-| Problem | Fix |
-|---------|-----|
-| Won't start | `pip install tkcalendar` |
-| Wrong subjects showing | Check batch in Setup tab |
-| Import fails | Day must be uppercase (MONDAY not Monday) |
-| Want fresh start | Delete `data.json` or use Setup → Reset Data |
+| Problem | Solution |
+|---------|----------|
+| App won't start | Run `pip install tkcalendar` |
+| Wrong attendance showing | Check semester dates in Setup tab |
+| Subject missing | Your timetable might not have it - import a custom one |
+| Data lost after restart | Make sure `data.json` exists in the app folder |
 
 ---
 
 ## Files
 
-- `app.py` — Run this
-- `data.json` — Your attendance data (auto-created)
-- `custom_timetable.json` — Your imported timetable (if any)
-- `COMPLETE_GUIDE.md` — Detailed CSV format guide
+| File | What it does |
+|------|--------------|
+| `app.py` | Run this to start |
+| `data.json` | Your attendance data (auto-created) |
+| `custom_timetable.json` | Your uploaded timetable (if any) |
 
 ---
 
-## Contributing
-
-Issues and PRs welcome. It's a simple Tkinter app, easy to hack on.
-
----
-
-**Made by** [Siddhesh Bisen](https://github.com/siddhesh17b) — MIT License
+Made by **Siddhesh Bisen** • [GitHub](https://github.com/siddhesh17b)

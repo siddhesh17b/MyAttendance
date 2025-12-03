@@ -1,76 +1,87 @@
-# CSV Timetable Format
+# Custom Timetable Guide
 
-## Quickest Way
-
-1. **Setup → Export Template** (get a sample CSV)
-2. Edit in Excel/Notepad
-3. **Setup → Import** your file
-4. Done
+Want to use your own class schedule instead of the default? Here's how.
 
 ---
 
-## Format
+## Quick Steps
 
-```csv
-Day,Time,Subject
-MONDAY,09:00-10:00,Math
-MONDAY,10:00-11:00,Physics
-MONDAY,12:00-01:00,Lunch Break
-TUESDAY,02:00-04:00,Lab (Group A) / Lab (Group B)
-```
+1. **Setup Tab** → **Export Timetable Template** (saves a sample CSV)
+2. Open CSV in Excel/Notepad, replace with your classes
+3. **Setup Tab** → **Import Custom Timetable**
+4. Select your batch when prompted
+5. Done! Check **Timetable Tab** to verify
 
-| Column | Rules |
-|--------|-------|
-| Day | MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY (uppercase) |
-| Time | Any format: `09:00-10:00`, `8-9am`, `14:00-16:00` |
-| Subject | Any name. "Lunch" is ignored. |
+---
+
+## CSV Format Rules
+
+Your CSV file needs exactly **3 columns** in this order:
+
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Day | Time | Subject |
+| `MONDAY` | `09:00-10:00` | `Mathematics` |
+
+### Rules:
+- **No header row** (don't put "Day,Time,Subject" at the top)
+- **Days must be uppercase**: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY
+- **Time can be any format**: 09:00-10:00, 9-10, 0900-1000 (flexible)
+- **Subject name**: Anything except "Lunch" (lunch periods are skipped)
 
 ---
 
 ## Batch-Specific Classes
 
-For labs where different batches have different subjects:
+If different batches have different classes at the same time, write both in one cell:
 
-```csv
-WEDNESDAY,03:00-04:00,CN Lab (B1&B3) / DAA Lab (B2&B4)
-THURSDAY,01:00-02:30,Physics Lab (Group A) / Chemistry Lab (Group B)
+```
+MONDAY,02:00-04:00,Physics Lab (B1) / Chemistry Lab (B2)
 ```
 
-- App **auto-detects** batch names from parentheses
-- Works with any naming: `(B1&B3)`, `(Group A)`, `(Section X)`
-- Select your batch in Setup tab after import
+The app reads the batch in parentheses and shows the right one for you.
+
+**Format:** `Subject1 (Batch1) / Subject2 (Batch2)`
+
+You can use any batch names: B1, B2, Group A, Section X, etc.
+
+---
+
+## Example CSV
+
+```
+MONDAY,09:00-10:00,Mathematics
+MONDAY,10:00-11:00,Physics
+MONDAY,11:00-12:00,Chemistry
+MONDAY,12:00-01:00,Lunch
+MONDAY,02:00-04:00,Physics Lab (B1) / Chemistry Lab (B2)
+TUESDAY,09:00-10:00,English
+TUESDAY,10:00-11:00,Computer Science
+```
 
 ---
 
 ## Common Errors
 
-| Error | Fix |
-|-------|-----|
-| Invalid CSV | Need exactly 3 columns: Day, Time, Subject |
-| Invalid day | Must be uppercase: MONDAY not Monday |
-| Missing days | Include all 6 days (empty subjects OK) |
-| Subject not tracked | Check it doesn't contain "Lunch" |
+| Error | Cause | Fix |
+|-------|-------|-----|
+| "Invalid day name" | Day not uppercase | Change `Monday` to `MONDAY` |
+| "No subjects found" | Wrong batch selected | Re-import and pick correct batch |
+| Subject not showing | Typo in subject name | Check spelling in CSV |
+| Import failed | CSV has header row | Delete the first row if it says "Day,Time,Subject" |
 
 ---
 
-## Examples
+## Reset to Default
 
-**Early classes:**
-```csv
-MONDAY,08:00-09:00,Extra Class
-MONDAY,09:00-10:00,Math
-```
+Made a mistake? **Setup Tab** → **Reset to Default Timetable**
 
-**Long lab sessions:**
-```csv
-TUESDAY,02:00-05:00,Programming Lab
-```
-
-**Course codes:**
-```csv
-MONDAY,09:00-10:00,CS101 - Data Structures
-```
+This removes your custom timetable and brings back the built-in schedule.
 
 ---
 
-**Need help?** [GitHub Issues](https://github.com/siddhesh17b/MyAttendance/issues)
+## After Import
+
+- Your old attendance data is **cleared** (fresh start with new timetable)
+- Go to **Timetable Tab** to verify your schedule looks correct
+- Start marking attendance in **Attendance Tab**
