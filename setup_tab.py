@@ -288,8 +288,8 @@ class SetupTab:
                         continue
                         
                     # Extract all text inside parentheses using regex
-                    # Pattern: \\(([^)]+)\\) matches anything between ( and )
-                    matches = re.findall(r'\\(([^)]+)\\)', cell_value)
+                    # Pattern: \(([^)]+)\) matches anything between ( and )
+                    matches = re.findall(r'\(([^)]+)\)', cell_value)
                     
                     for match in matches:
                         # Clean whitespace and validate

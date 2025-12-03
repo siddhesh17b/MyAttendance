@@ -147,8 +147,14 @@ def parse_timetable_csv(batch):
                         # Format: "Subject1 (Batch1) / Subject2 (Batch2)"
                         parts = cell_value.split("/")
                         for part in parts:
-                            # Check if this part matches the selected batch
-                            if f"({batch})" in part or batch in part:
+                            # Flexible batch matching: handles multiple formats
+                            # B1/B3 matches B1&B3, Group A matches GroupA, Group-A, etc.
+                            # Normalize both batch and part for comparison (remove spaces, hyphens, slashes)
+                            normalized_batch = batch.replace("/", "").replace(" ", "").replace("-", "").upper()
+                            normalized_part = part.replace("&", "").replace(" ", "").replace("-", "").upper()
+                            
+                            # Check if normalized batch appears in the normalized part
+                            if normalized_batch in normalized_part:
                                 # Extract subject name (remove batch info)
                                 lab_subject = extract_subject_name(part.split("(")[0])
                                 if lab_subject:
@@ -181,10 +187,17 @@ def get_subjects_for_day(day_name, batch):
             subject = extract_subject_name(cell_value)
             if subject:
                 if "/" in cell_value and "(" in cell_value:
-                    # Dynamic batch matching
+                    # Dynamic batch matching - handle B1/B3 matching B1&B3
                     parts = cell_value.split("/")
                     for part in parts:
-                        if f"({batch})" in part or batch in part:
+                        # Flexible batch matching: handles multiple formats
+                        # B1/B3 matches B1&B3, Group A matches GroupA, Group-A, etc.
+                        # Normalize both batch and part for comparison (remove spaces, hyphens, slashes)
+                        normalized_batch = batch.replace("/", "").replace(" ", "").replace("-", "").upper()
+                        normalized_part = part.replace("&", "").replace(" ", "").replace("-", "").upper()
+                        
+                        # Check if normalized batch appears in the normalized part
+                        if normalized_batch in normalized_part:
                             lab_subject = extract_subject_name(part.split("(")[0])
                             if lab_subject and lab_subject not in subjects:
                                 subjects.append(lab_subject)
