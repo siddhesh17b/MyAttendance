@@ -187,3 +187,4 @@ attendance_report_*.txt      # Exported reports
 *_old.py                     # Old backup Python files
 data.json
 .github/                     # GitHub specific files (copilot instructions, workflows)
+/.github
