@@ -3,14 +3,14 @@
 ## Project Overview
 Python desktop app helping students manage attendance and calculate safe class skips while maintaining 75% attendance threshold. Built with Tkinter using tabbed interface with **Google Calendar-style monthly attendance marking** where all classes are marked present by default. Students can left-click dates to mark individual subjects absent OR right-click to mark entire day absent. Timetable data is hardcoded (no CSV runtime dependency).
 
-## File Structure (7 Files) - Total: ~63 KB
+## File Structure (7 Files) - Total: ~65 KB
 ```
 app.py                  # 4.5 KB  - Main entry point, 1400x900 window, first-run wizard
 data_manager.py         # 7.2 KB  - Hardcoded timetable, subject extraction, JSON persistence
 calculations.py         # 2.6 KB  - Attendance math, date calculations, weeks elapsed
-setup_tab.py            # 8.5 KB  - Configuration UI: batch, semester dates, holidays
+setup_tab.py            # 8.5 KB  - Configuration UI: batch, semester dates, holidays, reset
 timetable_tab.py        # 6.6 KB  - Visual weekly timetable display (read-only)
-attendance_calendar.py  # 22.6 KB - Google Calendar-style monthly view (click/right-click)
+attendance_calendar.py  # 23.8 KB - Google Calendar-style monthly view (semester validation, Saturday fix)
 summary_tab.py          # 8.7 KB  - Dashboard with statistics and report export
 ```
 **Note**: Code prioritizes readability with proper spacing, comments, and docstrings
@@ -159,8 +159,8 @@ Store in `data.json`:
   - Light Red (#FFEBEE): Some classes marked absent
   - Light Yellow (#FFF9C4): Holiday
   - Light Blue (#E3F2FD): Today
-  - Light Gray (#F5F5F5): Weekend
-  - Very Light Gray (#FAFAFA): Future dates
+  - Light Gray (#F5F5F5): Sunday only (Saturday has classes)
+  - Very Light Gray (#FAFAFA): Future dates / Outside semester range
 - **Interaction Methods**:
   - **Left-click date**: Open side panel to mark individual subjects
   - **Right-click date**: Mark ALL subjects for that day as absent instantly
@@ -177,6 +177,8 @@ Store in `data.json`:
   - `save_attendance()` method properly accesses check_vars for saving
   - Right-click bound with `<Button-3>` event
   - Validation prevents marking future dates or out-of-semester dates
+  - Semester date validation: `get_day_status()` checks if date is within semester_start and semester_end
+  - Weekend logic: Only Sunday (day_idx == 6) marked as weekend, Saturday has classes
 - **Holiday Management**: Single-click toggle for marking individual days as holidays
 - Confirmed absences save to absent_dates[] and update day colors
 - Visual legend at bottom explaining color scheme
@@ -272,11 +274,11 @@ Keep functions focused and named clearly:
 - Returns tab frame for notebook.add()
 - Clean, well-commented code
 
-### `attendance_calendar.py` - Google Calendar-Style Monthly View (~560 lines)
+### `attendance_calendar.py` - Google Calendar-Style Monthly View (~600 lines)
 - `AttendanceCalendar` class with create() method
 - **Google Calendar-style interface**: Monthly grid layout with day cells
 - Month navigation: prev_month(), next_month(), go_to_today()
-- Color-coded days: Green (present), Red (absent), Yellow (holiday), Blue (today), Gray (weekend/future)
+- Color-coded days: Green (present), Red (absent), Yellow (holiday), Blue (today), Gray (Sunday/future/outside semester)
 - **Left-click**: on_date_clicked(date_str) - Shows subjects in side panel
 - **Right-click**: on_date_right_clicked(date_str) - Marks ALL subjects absent instantly
 - show_subjects_panel(date_str, subjects) - Side panel with PRE-CHECKED checkboxes
@@ -284,8 +286,8 @@ Keep functions focused and named clearly:
 - clear_subjects_panel() - Closes side panel and shows placeholder
 - toggle_holiday(date_str) - Mark/unmark single day as holiday
 - is_holiday_date(date_str) - Check if date is in holiday list
-- get_day_status(date_str) - Returns status: present/absent/holiday/no_class
-- draw_calendar() - Renders monthly grid with 7-day week layout, binds click events
+- get_day_status(date_str) - Returns status: present/absent/holiday/no_class (validates semester dates)
+- draw_calendar() - Renders monthly grid with 7-day week layout, binds click events (Saturday treated as weekday)
 - **Layout**: 70/30 split (calendar grid + side panel)
 - **Logic**: Checked = present (default), Unchecked = mark absent
 - **Instance variables**: self.check_vars stores checkbox states for save_attendance()
@@ -326,8 +328,9 @@ Keep functions focused and named clearly:
 ## Edge Cases to Handle
 - Division by zero when total classes = 0
 - More absences than total classes possible (show warning, highlight in red)
-- Calendar date selection before semester starts or after semester ends (show info message)
+- Calendar date selection before semester starts or after semester ends (show as gray/future - handled by get_day_status)
 - Clicking date with no classes scheduled (show "No classes" message, clear side panel)
+- Saturday treated as working day (only Sunday is weekend)
 - Marking same date absent multiple times (prevent duplicates in absent_dates[])
 - Overlapping holiday periods (validate before adding in setup, single-day toggle in calendar)
 - First-time launch with no `data.json` file (create default + show setup wizard with absent_dates=[])
@@ -358,7 +361,6 @@ Keep functions focused and named clearly:
 8. **Phase 8**: Readability improvements - proper spacing, comments, documentation ✅
 9. **Phase 9**: Enhanced features - right-click marking, improved save logic ✅
 10. **Phase 10**: Window resize to 1400x900, app rename to "MyAttendance" ✅
-
 ## Implemented Features
 - ✅ **Google Calendar-Style UI**: Monthly grid with color-coded days
 - ✅ **Left-Click Marking**: Open side panel to mark individual subjects
@@ -368,6 +370,10 @@ Keep functions focused and named clearly:
 - ✅ **Export Report**: Generate timestamped text file with attendance summary
 - ✅ **Real-time Updates**: All tabs refresh when data changes
 - ✅ **Present by Default**: Only absences tracked, all other classes marked present
+- ✅ **Batch-Aware Labs**: Correct lab display based on B1/B3 or B2/B4 selection
+- ✅ **Semester Date Validation**: Dates before semester start or after end shown as gray/future
+- ✅ **Saturday Working Day**: Only Sunday treated as weekend (Saturday has classes)
+- ✅ **Author Credits**: All 7 Python files include "Author: Siddhesh Bisen, GitHub: https://github.com/siddhesh17b"sent
 - ✅ **Batch-Aware Labs**: Correct lab display based on B1/B3 or B2/B4 selection
 
 ## Optional Features (Future Enhancements)
