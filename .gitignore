@@ -181,8 +181,9 @@ cython_debug/
 .cursorindexingignore
 
 # MyAttendance Specific
-*.json                    # User data (personal attendance records)
+*.json                       # User data (personal attendance records)
 attendance_report_*.txt      # Exported reports
 *.bak                        # Backup files
 *_old.py                     # Old backup Python files
 data.json
+.github/                     # GitHub specific files (copilot instructions, workflows)
