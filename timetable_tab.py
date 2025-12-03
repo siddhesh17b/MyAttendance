@@ -49,6 +49,11 @@ class TimetableTab:
         self.timetable_frame.bind("<Configure>", configure_scroll_region)
         canvas.bind("<Configure>", configure_scroll_region)
         
+        # Enable mouse wheel scrolling
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        
     def create_legend(self):
         legend_frame = ttk.LabelFrame(self.frame, text="Legend", padding="10")
         legend_frame.grid(row=2, column=0, sticky=(tk.W, tk.E))

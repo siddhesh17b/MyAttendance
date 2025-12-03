@@ -268,24 +268,26 @@ class SetupTab:
         app_data = get_app_data()
         dialog = tk.Toplevel()
         dialog.title("Add Holiday")
-        dialog.geometry("300x200")
+        dialog.geometry("450x400")
         
-        tk.Label(dialog, text="Holiday Name:").pack(pady=5)
+        tk.Label(dialog, text="Holiday Name:", font=("Segoe UI", 10, "bold")).pack(pady=5)
         name_entry = ttk.Entry(dialog, width=30)
         name_entry.pack()
         
-        tk.Label(dialog, text="Start Date (YYYY-MM-DD):").pack(pady=5)
-        start_entry = ttk.Entry(dialog, width=30)
-        start_entry.pack()
+        # Start date calendar
+        tk.Label(dialog, text="Start Date:", font=("Segoe UI", 10, "bold")).pack(pady=(10, 5))
+        start_cal = Calendar(dialog, selectmode='day', date_pattern='yyyy-mm-dd')
+        start_cal.pack(pady=5)
         
-        tk.Label(dialog, text="End Date (YYYY-MM-DD):").pack(pady=5)
-        end_entry = ttk.Entry(dialog, width=30)
-        end_entry.pack()
+        # End date calendar
+        tk.Label(dialog, text="End Date:", font=("Segoe UI", 10, "bold")).pack(pady=(10, 5))
+        end_cal = Calendar(dialog, selectmode='day', date_pattern='yyyy-mm-dd')
+        end_cal.pack(pady=5)
         
         def save_holiday():
             name = name_entry.get().strip()
-            start = start_entry.get().strip()
-            end = end_entry.get().strip()
+            start = start_cal.get_date()
+            end = end_cal.get_date()
             
             if not name or not start or not end:
                 messagebox.showerror("Error", "All fields are required")
@@ -322,31 +324,33 @@ class SetupTab:
         app_data = get_app_data()
         dialog = tk.Toplevel()
         dialog.title("Add Skipped Days")
-        dialog.geometry("350x220")
+        dialog.geometry("450x450")
         
-        tk.Label(dialog, text="Reason (e.g., Sick, Personal):").pack(pady=5)
+        tk.Label(dialog, text="Reason (e.g., Sick, Personal):", font=("Segoe UI", 10, "bold")).pack(pady=5)
         name_entry = ttk.Entry(dialog, width=30)
         name_entry.pack()
         
-        tk.Label(dialog, text="Start Date (YYYY-MM-DD):").pack(pady=5)
-        start_entry = ttk.Entry(dialog, width=30)
-        start_entry.pack()
+        # Start date calendar
+        tk.Label(dialog, text="Start Date:", font=("Segoe UI", 10, "bold")).pack(pady=(10, 5))
+        start_cal = Calendar(dialog, selectmode='day', date_pattern='yyyy-mm-dd')
+        start_cal.pack(pady=5)
         
-        tk.Label(dialog, text="End Date (YYYY-MM-DD):").pack(pady=5)
-        end_entry = ttk.Entry(dialog, width=30)
-        end_entry.pack()
+        # End date calendar
+        tk.Label(dialog, text="End Date:", font=("Segoe UI", 10, "bold")).pack(pady=(10, 5))
+        end_cal = Calendar(dialog, selectmode='day', date_pattern='yyyy-mm-dd')
+        end_cal.pack(pady=5)
         
         tk.Label(
             dialog, 
             text="⚠️ All classes in this period will be marked absent",
-            font=("Arial", 8),
+            font=("Arial", 9),
             foreground="#dc3545"
         ).pack(pady=5)
         
         def save_skipped():
             name = name_entry.get().strip()
-            start = start_entry.get().strip()
-            end = end_entry.get().strip()
+            start = start_cal.get_date()
+            end = end_cal.get_date()
             
             if not name or not start or not end:
                 messagebox.showerror("Error", "All fields are required")

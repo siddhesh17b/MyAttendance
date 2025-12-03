@@ -188,3 +188,5 @@ attendance_report_*.txt      # Exported reports
 *_old.py                     # Old backup Python files
 /.github
 my_timetable.csv
+data.json
+custom_timetable.json

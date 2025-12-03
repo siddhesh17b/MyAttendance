@@ -58,6 +58,11 @@ class SummaryTab:
         columns = ("Subject", "Present", "Total", "Attendance %", "Status", "Safe to Skip")
         self.summary_tree = ttk.Treeview(tab, columns=columns, show="headings", height=12)
         
+        # Enable mouse wheel scrolling on treeview
+        def _on_mousewheel(event):
+            self.summary_tree.yview_scroll(int(-1*(event.delta/120)), "units")
+        self.summary_tree.bind("<MouseWheel>", _on_mousewheel)
+        
         for col in columns:
             self.summary_tree.heading(col, text=col)
             # Set column widths
