@@ -6,7 +6,7 @@
   "subjects": [
     {
       "name": "TOC",
-      "weekly_count": 3,
+      "weekly_count": 2,
       "total_override": null,
       "absent_dates": []
     },
@@ -14,17 +14,13 @@
       "name": "CN",
       "weekly_count": 3,
       "total_override": null,
-      "absent_dates": [
-        "2025-12-02"
-      ]
+      "absent_dates": []
     },
     {
       "name": "Minor",
       "weekly_count": 3,
       "total_override": null,
-      "absent_dates": [
-        "2025-12-02"
-      ]
+      "absent_dates": []
     },
     {
       "name": "DM",
@@ -36,17 +32,13 @@
       "name": "DAA",
       "weekly_count": 3,
       "total_override": null,
-      "absent_dates": [
-        "2025-12-02"
-      ]
+      "absent_dates": []
     },
     {
       "name": "siddhesh",
       "weekly_count": 1,
       "total_override": null,
-      "absent_dates": [
-        "2025-12-02"
-      ]
+      "absent_dates": []
     },
     {
       "name": "DAA Lab",
