@@ -88,41 +88,85 @@ class SetupTab:
         scrollable_frame.columnconfigure(0, weight=1)
         scrollable_frame.columnconfigure(1, weight=1)
         
-        # Batch Selection (LEFT)
-        self.batch_frame = tk.LabelFrame(self.left_column, text="Batch Selection", 
-                                    font=("Arial", 11, "bold"), padx=10, pady=10)
+        # Batch Selection (LEFT) - Enhanced with icons and better styling
+        self.batch_frame = tk.Frame(self.left_column, bg="#e3f2fd", relief="raised", bd=2)
         self.batch_frame.pack(fill=tk.X, padx=10, pady=10)
         
+        # Batch header with icon
+        batch_header = tk.Frame(self.batch_frame, bg="#1976d2")
+        batch_header.pack(fill=tk.X)
+        tk.Label(
+            batch_header,
+            text="👥 Batch Selection",
+            font=("Segoe UI", 13, "bold"),
+            bg="#1976d2",
+            fg="white",
+            padx=15,
+            pady=10
+        ).pack(side=tk.LEFT)
+        
+        # Batch content area
+        batch_content = tk.Frame(self.batch_frame, bg="#e3f2fd", padx=15, pady=15)
+        batch_content.pack(fill=tk.X)
+        
+        tk.Label(
+            batch_content,
+            text="Select your batch/section for accurate timetable filtering:",
+            font=("Segoe UI", 10),
+            bg="#e3f2fd",
+            fg="#1565c0"
+        ).pack(anchor=tk.W, pady=(0, 10))
+        
         # Container for dynamic batch options
-        self.batch_container = ttk.Frame(self.batch_frame)
-        self.batch_container.pack(fill=tk.X)
+        self.batch_container = tk.Frame(batch_content, bg="#e3f2fd")
+        self.batch_container.pack(fill=tk.X, pady=5)
         
         # Initialize batch selection
         self.batch_var = tk.StringVar(value=app_data.get("batch", ""))
         self.update_batch_options()
         
-        ttk.Button(self.batch_frame, text="Update Batch", command=self.on_batch_update).pack(pady=5)
+        # Update button with better styling
+        update_btn_frame = tk.Frame(batch_content, bg="#e3f2fd")
+        update_btn_frame.pack(fill=tk.X, pady=(10, 5))
+        ttk.Button(update_btn_frame, text="✓ Update Batch", command=self.on_batch_update).pack(side=tk.LEFT)
         
         # Setup mode banner (hidden by default)
         self.setup_banner = tk.Frame(self.left_column, bg="#fff3cd")
         # Will be shown/hidden as needed
         
-        # Semester Dates (LEFT) - Improved layout
-        self.dates_frame = tk.LabelFrame(self.left_column, text="📅 Semester Dates", 
-                                    font=("Arial", 11, "bold"), padx=10, pady=10)
+        # Semester Dates (LEFT) - Enhanced with better styling
+        self.dates_frame = tk.Frame(self.left_column, bg="#e8f5e9", relief="raised", bd=2)
         self.dates_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        # Dates header with icon
+        dates_header = tk.Frame(self.dates_frame, bg="#388e3c")
+        dates_header.pack(fill=tk.X)
+        tk.Label(
+            dates_header,
+            text="📅 Semester Dates",
+            font=("Segoe UI", 13, "bold"),
+            bg="#388e3c",
+            fg="white",
+            padx=15,
+            pady=10
+        ).pack(side=tk.LEFT)
+        
+        # Dates content area
+        dates_content = tk.Frame(self.dates_frame, bg="#e8f5e9", padx=15, pady=15)
+        dates_content.pack(fill=tk.X)
         
         # Info text
         tk.Label(
-            self.dates_frame,
+            dates_content,
             text="Set your semester start and end dates for accurate attendance calculation.",
             font=("Segoe UI", 10),
-            foreground="#666666"
-        ).grid(row=0, column=0, columnspan=2, sticky=tk.W, pady=(0, 10))
+            bg="#e8f5e9",
+            fg="#2e7d32"
+        ).pack(anchor=tk.W, pady=(0, 10))
         
         # Calendars container
-        calendars_container = ttk.Frame(self.dates_frame)
-        calendars_container.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E))
+        calendars_container = tk.Frame(dates_content, bg="#e8f5e9")
+        calendars_container.pack(fill=tk.X)
         
         # Start Date Calendar
         start_frame = ttk.LabelFrame(calendars_container, text="Start Date", padding=5)
@@ -167,15 +211,40 @@ class SetupTab:
         self.end_date_cal.pack(pady=5)
         
         # Save button
-        ttk.Button(self.dates_frame, text="✓ Save Semester Dates", command=self.on_dates_update).grid(
-            row=2, column=0, columnspan=2, pady=10)
+        save_btn_frame = tk.Frame(dates_content, bg="#e8f5e9")
+        save_btn_frame.pack(fill=tk.X, pady=(10, 0))
+        ttk.Button(save_btn_frame, text="✓ Save Semester Dates", command=self.on_dates_update).pack(side=tk.LEFT)
         
-        # Holidays (LEFT)
-        self.holidays_frame = tk.LabelFrame(self.left_column, text="Holiday Periods", 
-                                      font=("Arial", 11, "bold"), padx=10, pady=10)
+        # Holidays (LEFT) - Enhanced with better styling
+        self.holidays_frame = tk.Frame(self.left_column, bg="#fff8e1", relief="raised", bd=2)
         self.holidays_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        self.holidays_tree = ttk.Treeview(self.holidays_frame, columns=("No", "Name", "Date"), 
+        # Holidays header with icon
+        holidays_header = tk.Frame(self.holidays_frame, bg="#f57c00")
+        holidays_header.pack(fill=tk.X)
+        tk.Label(
+            holidays_header,
+            text="🏖️ Holiday Periods",
+            font=("Segoe UI", 13, "bold"),
+            bg="#f57c00",
+            fg="white",
+            padx=15,
+            pady=10
+        ).pack(side=tk.LEFT)
+        
+        # Holidays content area
+        holidays_content = tk.Frame(self.holidays_frame, bg="#fff8e1", padx=15, pady=15)
+        holidays_content.pack(fill=tk.BOTH, expand=True)
+        
+        tk.Label(
+            holidays_content,
+            text="Add holidays when no classes are held (these dates won't affect attendance).",
+            font=("Segoe UI", 10),
+            bg="#fff8e1",
+            fg="#e65100"
+        ).pack(anchor=tk.W, pady=(0, 10))
+        
+        self.holidays_tree = ttk.Treeview(holidays_content, columns=("No", "Name", "Date"), 
                                          show="headings", height=6)
         self.holidays_tree.heading("No", text="#")
         self.holidays_tree.heading("Name", text="Holiday Name")
@@ -200,37 +269,54 @@ class SetupTab:
         self.holidays_tree.bind("<Enter>", _bind_holidays_mousewheel)
         self.holidays_tree.bind("<Leave>", _unbind_holidays_mousewheel)
         
-        btn_frame = tk.Frame(self.holidays_frame)
+        btn_frame = tk.Frame(holidays_content, bg="#fff8e1")
         btn_frame.pack(fill=tk.X, pady=5)
         ttk.Button(btn_frame, text="➕ Add Holiday Period", command=self.add_holiday).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="➖ Remove Selected", command=self.remove_holiday).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="🗑️ Remove All", command=self.remove_all_holidays).pack(side=tk.LEFT, padx=5)
         
-        # Timetable Management Section (RIGHT)
-        self.timetable_frame = tk.LabelFrame(right_column, text="Custom Timetable Management", 
-                                        font=("Arial", 11, "bold"), padx=10, pady=10)
+        # Timetable Management Section (RIGHT) - Enhanced with better styling
+        self.timetable_frame = tk.Frame(right_column, bg="#e8eaf6", relief="raised", bd=2)
         self.timetable_frame.pack(fill=tk.X, padx=10, pady=10)
         
+        # Timetable header with icon
+        timetable_header = tk.Frame(self.timetable_frame, bg="#5c6bc0")
+        timetable_header.pack(fill=tk.X)
         tk.Label(
-            self.timetable_frame, 
-            text="📚 Upload your own timetable CSV or export the current one as a template.\nSee COMPLETE_GUIDE.md for format details.",
-            font=("Segoe UI", 10),
-            foreground="#007bff",
-            justify=tk.LEFT
-        ).pack(pady=5)
+            timetable_header,
+            text="📚 Custom Timetable",
+            font=("Segoe UI", 13, "bold"),
+            bg="#5c6bc0",
+            fg="white",
+            padx=15,
+            pady=10
+        ).pack(side=tk.LEFT)
         
-        timetable_btn_frame = tk.Frame(self.timetable_frame)
+        # Timetable content area
+        timetable_content = tk.Frame(self.timetable_frame, bg="#e8eaf6", padx=15, pady=15)
+        timetable_content.pack(fill=tk.X)
+        
+        tk.Label(
+            timetable_content, 
+            text="Upload your own timetable CSV or export the current one as a template.\nSee COMPLETE_GUIDE.md for format details.",
+            font=("Segoe UI", 10),
+            bg="#e8eaf6",
+            fg="#3949ab",
+            justify=tk.LEFT
+        ).pack(anchor=tk.W, pady=(0, 10))
+        
+        timetable_btn_frame = tk.Frame(timetable_content, bg="#e8eaf6")
         timetable_btn_frame.pack(fill=tk.X, pady=5)
         
         ttk.Button(
             timetable_btn_frame, 
-            text="📥 Import Custom Timetable", 
+            text="📥 Import CSV", 
             command=self.import_timetable
         ).pack(side=tk.LEFT, padx=5)
         
         ttk.Button(
             timetable_btn_frame, 
-            text="📤 Export Timetable Template", 
+            text="📤 Export Template", 
             command=self.export_timetable
         ).pack(side=tk.LEFT, padx=5)
         
@@ -241,19 +327,37 @@ class SetupTab:
         ).pack(side=tk.LEFT, padx=5)
         
         # Skipped Days (RIGHT)
-        self.skipped_frame = tk.LabelFrame(right_column, text="Completely Skipped Days (e.g., Sick Leave)", 
-                                      font=("Arial", 11, "bold"), padx=10, pady=10)
+        # Skipped Days (RIGHT) - Enhanced with better styling
+        self.skipped_frame = tk.Frame(right_column, bg="#fce4ec", relief="raised", bd=2)
         self.skipped_frame.pack(fill=tk.X, padx=10, pady=10)
         
+        # Skipped days header with icon
+        skipped_header = tk.Frame(self.skipped_frame, bg="#c2185b")
+        skipped_header.pack(fill=tk.X)
         tk.Label(
-            self.skipped_frame, 
-            text="📅 Days when you were completely absent (all classes marked absent)",
-            font=("Segoe UI", 10),
-            foreground="#dc3545",
-            justify=tk.LEFT
-        ).pack(pady=5)
+            skipped_header,
+            text="🤒 Skipped Days (Sick Leave, etc.)",
+            font=("Segoe UI", 13, "bold"),
+            bg="#c2185b",
+            fg="white",
+            padx=15,
+            pady=10
+        ).pack(side=tk.LEFT)
         
-        self.skipped_tree = ttk.Treeview(self.skipped_frame, columns=("No", "Name", "Date"), 
+        # Skipped days content area
+        skipped_content = tk.Frame(self.skipped_frame, bg="#fce4ec", padx=15, pady=15)
+        skipped_content.pack(fill=tk.X)
+        
+        tk.Label(
+            skipped_content, 
+            text="Days when you were completely absent (all classes marked absent).",
+            font=("Segoe UI", 10),
+            bg="#fce4ec",
+            fg="#ad1457",
+            justify=tk.LEFT
+        ).pack(anchor=tk.W, pady=(0, 10))
+        
+        self.skipped_tree = ttk.Treeview(skipped_content, columns=("No", "Name", "Date"), 
                                          show="headings", height=4)
         self.skipped_tree.heading("No", text="#")
         self.skipped_tree.heading("Name", text="Reason")
@@ -278,27 +382,56 @@ class SetupTab:
         self.skipped_tree.bind("<Enter>", _bind_skipped_mousewheel)
         self.skipped_tree.bind("<Leave>", _unbind_skipped_mousewheel)
         
-        skipped_btn_frame = tk.Frame(self.skipped_frame)
+        skipped_btn_frame = tk.Frame(skipped_content, bg="#fce4ec")
         skipped_btn_frame.pack(fill=tk.X, pady=5)
         ttk.Button(skipped_btn_frame, text="➕ Add Skipped Period", command=self.add_skipped_days).pack(side=tk.LEFT, padx=5)
         ttk.Button(skipped_btn_frame, text="➖ Remove Selected", command=self.remove_skipped_days).pack(side=tk.LEFT, padx=5)
         ttk.Button(skipped_btn_frame, text="🗑️ Remove All", command=self.remove_all_skipped_days).pack(side=tk.LEFT, padx=5)
         
-        # Reset Data Section (RIGHT)
-        self.reset_frame = tk.LabelFrame(right_column, text="Reset Data", 
-                                    font=("Arial", 11, "bold"), padx=10, pady=10)
+        # Reset Data Section (RIGHT) - Enhanced with red/warning theme
+        self.reset_frame = tk.Frame(right_column, bg="#ffffff", relief=tk.RIDGE, bd=1)
         self.reset_frame.pack(fill=tk.X, padx=10, pady=10)
         
+        # Red header bar
+        reset_header = tk.Frame(self.reset_frame, bg="#d32f2f", height=40)
+        reset_header.pack(fill=tk.X)
+        reset_header.pack_propagate(False)
+        
         tk.Label(
-            self.reset_frame, 
-            text="⚠️ Warning: This will clear all holidays and absent dates.\nSemester dates and batch will be preserved.",
+            reset_header,
+            text="⚠️ Reset Data",
+            font=("Segoe UI", 12, "bold"),
+            bg="#d32f2f",
+            fg="white"
+        ).pack(side=tk.LEFT, padx=15, pady=8)
+        
+        # Light red content area
+        reset_content = tk.Frame(self.reset_frame, bg="#ffebee", padx=15, pady=15)
+        reset_content.pack(fill=tk.X)
+        
+        tk.Label(
+            reset_content, 
+            text="This will clear all holidays, skipped days, and absent dates.\nSemester dates and batch selection will be preserved.",
             font=("Segoe UI", 10),
-            foreground="#dc3545",
+            bg="#ffebee",
+            fg="#c62828",
             justify=tk.LEFT
-        ).pack(pady=5)
+        ).pack(pady=(0, 10), anchor="w")
+        
+        # Warning icon box
+        warning_box = tk.Frame(reset_content, bg="#ffcdd2", padx=10, pady=8, relief=tk.FLAT, bd=1)
+        warning_box.pack(fill=tk.X, pady=(0, 10))
+        
+        tk.Label(
+            warning_box,
+            text="⚡ This action cannot be undone!",
+            font=("Segoe UI", 10, "bold"),
+            bg="#ffcdd2",
+            fg="#b71c1c"
+        ).pack(anchor="w")
         
         ttk.Button(
-            self.reset_frame, 
+            reset_content, 
             text="🔄 Reset All Data", 
             command=self.reset_data
         ).pack(pady=5)
