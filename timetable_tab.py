@@ -15,6 +15,11 @@ class TimetableTab:
         self.parent = parent
         self.refresh_callback = refresh_callback
         self.frame = None
+        # Zoom level settings
+        self.zoom_level = 1.0  # 1.0 = 100%
+        self.min_zoom = 0.6
+        self.max_zoom = 1.6
+        self.zoom_step = 0.2
         
     def create(self):
         self.frame = ttk.Frame(self.parent, padding="20")
@@ -24,11 +29,52 @@ class TimetableTab:
         title_frame = ttk.Frame(self.frame)
         title_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), pady=(0, 15))
         ttk.Label(title_frame, text="📅 Weekly Timetable", font=("Segoe UI", 16, "bold")).grid(row=0, column=0, sticky=tk.W)
-        self.batch_label = ttk.Label(title_frame, text="", font=("Segoe UI", 10))
-        self.batch_label.grid(row=1, column=0, sticky=tk.W, pady=(5, 0))
+        
+        # Batch label and zoom controls in same row
+        controls_frame = ttk.Frame(title_frame)
+        controls_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(5, 0))
+        
+        self.batch_label = ttk.Label(controls_frame, text="", font=("Segoe UI", 10))
+        self.batch_label.pack(side=tk.LEFT)
+        
+        # Zoom controls
+        zoom_frame = ttk.Frame(controls_frame)
+        zoom_frame.pack(side=tk.RIGHT, padx=(20, 0))
+        
+        ttk.Label(zoom_frame, text="🔍 Zoom:", font=("Segoe UI", 10)).pack(side=tk.LEFT, padx=(0, 5))
+        
+        ttk.Button(zoom_frame, text="−", width=3, command=self.zoom_out).pack(side=tk.LEFT, padx=2)
+        
+        self.zoom_label = ttk.Label(zoom_frame, text="100%", font=("Segoe UI", 10, "bold"), width=5)
+        self.zoom_label.pack(side=tk.LEFT, padx=5)
+        
+        ttk.Button(zoom_frame, text="+", width=3, command=self.zoom_in).pack(side=tk.LEFT, padx=2)
+        
+        ttk.Button(zoom_frame, text="Reset", width=6, command=self.zoom_reset).pack(side=tk.LEFT, padx=(10, 0))
+        
         self.create_timetable_view()
         self.refresh()
         return self.frame
+    
+    def zoom_in(self):
+        """Increase zoom level"""
+        if self.zoom_level < self.max_zoom:
+            self.zoom_level = min(self.max_zoom, self.zoom_level + self.zoom_step)
+            self.zoom_label.config(text=f"{int(self.zoom_level * 100)}%")
+            self.refresh()
+    
+    def zoom_out(self):
+        """Decrease zoom level"""
+        if self.zoom_level > self.min_zoom:
+            self.zoom_level = max(self.min_zoom, self.zoom_level - self.zoom_step)
+            self.zoom_label.config(text=f"{int(self.zoom_level * 100)}%")
+            self.refresh()
+    
+    def zoom_reset(self):
+        """Reset zoom to 100%"""
+        self.zoom_level = 1.0
+        self.zoom_label.config(text="100%")
+        self.refresh()
     
     def create_timetable_view(self):
         container = ttk.Frame(self.frame)
@@ -89,19 +135,34 @@ class TimetableTab:
         
         time_slots = sorted(list(time_slots_set), key=sort_time_slot)
         
+        # Calculate zoomed sizes
+        base_header_font = 12
+        base_time_font = 11
+        base_cell_font = 11
+        base_padding = 12
+        base_wraplength = 120
+        base_minsize = 120
+        
+        header_font_size = int(base_header_font * self.zoom_level)
+        time_font_size = int(base_time_font * self.zoom_level)
+        cell_font_size = int(base_cell_font * self.zoom_level)
+        cell_padding = int(base_padding * self.zoom_level)
+        wraplength = int(base_wraplength * self.zoom_level)
+        minsize = int(base_minsize * self.zoom_level)
+        
         days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-        ttk.Label(self.timetable_frame, text="Day", font=("Segoe UI", 10, "bold"), background="#ECEFF1", relief="solid", borderwidth=1, padding=8).grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=1, pady=1)
+        ttk.Label(self.timetable_frame, text="Day", font=("Segoe UI", header_font_size, "bold"), background="#ECEFF1", relief="solid", borderwidth=1, padding=cell_padding).grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=1, pady=1)
         
         for col_idx, time_slot in enumerate(time_slots, 1):
-            ttk.Label(self.timetable_frame, text=time_slot, font=("Segoe UI", 9, "bold"), background="#ECEFF1", relief="solid", borderwidth=1, padding=6, wraplength=80).grid(row=0, column=col_idx, sticky=(tk.W, tk.E, tk.N, tk.S), padx=1, pady=1)
+            ttk.Label(self.timetable_frame, text=time_slot, font=("Segoe UI", time_font_size, "bold"), background="#ECEFF1", relief="solid", borderwidth=1, padding=int(cell_padding * 0.8), wraplength=wraplength).grid(row=0, column=col_idx, sticky=(tk.W, tk.E, tk.N, tk.S), padx=1, pady=1)
         for row_idx, day in enumerate(days, 1):
-            ttk.Label(self.timetable_frame, text=day, font=("Segoe UI", 10, "bold"), background="#ECEFF1", relief="solid", borderwidth=1, padding=8).grid(row=row_idx, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=1, pady=1)
+            ttk.Label(self.timetable_frame, text=day, font=("Segoe UI", header_font_size, "bold"), background="#ECEFF1", relief="solid", borderwidth=1, padding=cell_padding).grid(row=row_idx, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=1, pady=1)
             for col_idx, time_slot in enumerate(time_slots, 1):
                 subject = self.get_subject_for_slot(day, time_slot, batch)
                 bg_color, fg_color = self.get_subject_colors(subject, time_slot)
-                tk.Label(self.timetable_frame, text=subject, font=("Segoe UI", 8, "bold" if subject not in ["BREAK", "LUNCH", ""] else "normal"), background=bg_color, foreground=fg_color, relief="solid", borderwidth=1, padx=8, pady=8, wraplength=100, justify="center").grid(row=row_idx, column=col_idx, sticky=(tk.W, tk.E, tk.N, tk.S), padx=1, pady=1)
+                tk.Label(self.timetable_frame, text=subject, font=("Segoe UI", cell_font_size, "bold" if subject not in ["BREAK", "LUNCH", ""] else "normal"), background=bg_color, foreground=fg_color, relief="solid", borderwidth=1, padx=cell_padding, pady=cell_padding, wraplength=wraplength, justify="center").grid(row=row_idx, column=col_idx, sticky=(tk.W, tk.E, tk.N, tk.S), padx=1, pady=1)
         for col in range(len(time_slots) + 1):
-            self.timetable_frame.columnconfigure(col, weight=1, minsize=90)
+            self.timetable_frame.columnconfigure(col, weight=1, minsize=minsize)
     
     def get_subject_for_slot(self, day, time_slot, batch):
         """Get subject for a specific day/time slot, handling batch-specific entries"""

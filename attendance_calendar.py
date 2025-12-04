@@ -88,7 +88,7 @@ class AttendanceCalendar:
         hint_label = ttk.Label(header_frame, 
                               text="💡 Tip: Right-click any date to instantly mark entire day as absent",
                               foreground="#666666",
-                              font=("Segoe UI", 9))
+                              font=("Segoe UI", 10))
         hint_label.pack(side=tk.LEFT, padx=30)
     
     def create_calendar_container(self, parent):
@@ -159,7 +159,7 @@ class AttendanceCalendar:
             )
             color_box.pack(side=tk.LEFT, padx=3)
             
-            ttk.Label(frame, text=label, font=("Segoe UI", 9)).pack(side=tk.LEFT)
+            ttk.Label(frame, text=label, font=("Segoe UI", 10)).pack(side=tk.LEFT)
     
     def prev_month(self):
         """Navigate to previous month"""
@@ -399,7 +399,7 @@ class AttendanceCalendar:
         tk.Label(
             self.subjects_panel, 
             text="Uncheck to mark ABSENT", 
-            font=("Segoe UI", 9), 
+            font=("Segoe UI", 10), 
             foreground="gray"
         ).pack(pady=2)
         

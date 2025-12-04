@@ -116,7 +116,7 @@ class SetupTab:
         tk.Label(
             self.dates_frame,
             text="Set your semester start and end dates for accurate attendance calculation.",
-            font=("Segoe UI", 9),
+            font=("Segoe UI", 10),
             foreground="#666666"
         ).grid(row=0, column=0, columnspan=2, sticky=tk.W, pady=(0, 10))
         
@@ -214,7 +214,7 @@ class SetupTab:
         tk.Label(
             self.timetable_frame, 
             text="📚 Upload your own timetable CSV or export the current one as a template.\nSee COMPLETE_GUIDE.md for format details.",
-            font=("Arial", 9),
+            font=("Segoe UI", 10),
             foreground="#007bff",
             justify=tk.LEFT
         ).pack(pady=5)
@@ -248,7 +248,7 @@ class SetupTab:
         tk.Label(
             self.skipped_frame, 
             text="📅 Days when you were completely absent (all classes marked absent)",
-            font=("Arial", 9),
+            font=("Segoe UI", 10),
             foreground="#dc3545",
             justify=tk.LEFT
         ).pack(pady=5)
@@ -292,7 +292,7 @@ class SetupTab:
         tk.Label(
             self.reset_frame, 
             text="⚠️ Warning: This will clear all holidays and absent dates.\nSemester dates and batch will be preserved.",
-            font=("Arial", 9),
+            font=("Segoe UI", 10),
             foreground="#dc3545",
             justify=tk.LEFT
         ).pack(pady=5)
@@ -661,7 +661,7 @@ class SetupTab:
         warning_label = tk.Label(
             main_frame, 
             text="⚠️ All classes in this period will be marked absent",
-            font=("Segoe UI", 9),
+            font=("Segoe UI", 10),
             fg="#dc3545"
         )
         warning_label.pack(pady=(0, 10))
@@ -677,7 +677,7 @@ class SetupTab:
         
         # Placeholder hint
         tk.Label(reason_frame, text="(e.g., Sick, Personal, Family)", 
-                 font=("Segoe UI", 8), fg="#6c757d").pack(side="left", padx=5)
+                 font=("Segoe UI", 10), fg="#6c757d").pack(side="left", padx=5)
         
         # Calendars side by side
         calendars_frame = ttk.Frame(main_frame)

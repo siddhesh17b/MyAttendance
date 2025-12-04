@@ -82,7 +82,7 @@ class BunkBuddyApp:
         import_frame = ttk.LabelFrame(setup_window, text="Step 1: Import Your Timetable (Optional)", padding=10)
         import_frame.pack(fill=tk.X, padx=20, pady=10)
         
-        tk.Label(import_frame, text="Upload your CSV timetable to auto-detect batches", font=("Arial", 9)).pack()
+        tk.Label(import_frame, text="Upload your CSV timetable to auto-detect batches", font=("Segoe UI", 10)).pack()
         
         def import_timetable_firsttime():
             from data_manager import import_timetable_from_csv

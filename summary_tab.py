@@ -113,7 +113,7 @@ class SummaryTab:
         github_label = tk.Label(
             github_frame,
             text="Made by Siddhesh Bisen | GitHub: https://github.com/siddhesh17b",
-            font=("Segoe UI", 9),
+            font=("Segoe UI", 10),
             foreground="#666666",
             cursor="hand2"
         )
@@ -263,7 +263,7 @@ class SummaryTab:
         tk.Label(
             override_hint_frame,
             text="      Use this when classes were cancelled, rescheduled, or you need to correct attendance data",
-            font=("Segoe UI", 9),
+            font=("Segoe UI", 10),
             foreground="#1976d2",
             bg="#e3f2fd",
             anchor=tk.W
@@ -369,7 +369,7 @@ class SummaryTab:
         tk.Label(
             hint_frame,
             text="Double-click any row\nto override attendance",
-            font=("Segoe UI", 9),
+            font=("Segoe UI", 10),
             bg="#fff3cd",
             fg="#856404",
             justify=tk.LEFT
@@ -423,7 +423,7 @@ class SummaryTab:
         tk.Button(
             header,
             text="✕",
-            font=("Segoe UI", 9),
+            font=("Segoe UI", 10),
             bg="#f8f9fa",
             fg="#666",
             bd=0,
@@ -493,14 +493,14 @@ class SummaryTab:
         for label, value in stats:
             row = tk.Frame(stats_frame, bg="#f8f9fa")
             row.pack(fill=tk.X, padx=5, pady=2)
-            tk.Label(row, text=label, font=("Segoe UI", 9), bg="#f8f9fa", fg="#666").pack(side=tk.LEFT)
-            tk.Label(row, text=value, font=("Segoe UI", 9, "bold"), bg="#f8f9fa", fg="#333").pack(side=tk.RIGHT)
+            tk.Label(row, text=label, font=("Segoe UI", 10), bg="#f8f9fa", fg="#666").pack(side=tk.LEFT)
+            tk.Label(row, text=value, font=("Segoe UI", 10, "bold"), bg="#f8f9fa", fg="#333").pack(side=tk.RIGHT)
         
         if is_override:
             tk.Label(
                 stats_frame,
                 text="⚠️ Manual Override Active",
-                font=("Segoe UI", 8),
+                font=("Segoe UI", 10),
                 bg="#f8f9fa",
                 fg="#ff9800"
             ).pack(pady=(5, 2))
@@ -524,7 +524,7 @@ class SummaryTab:
                 tk.Label(
                     self.details_panel,
                     text=f"📈 Need {classes_needed} more classes\nwithout absence to reach 60%",
-                    font=("Segoe UI", 9),
+                    font=("Segoe UI", 10),
                     bg="#f8f9fa",
                     fg=COLOR_RISK,
                     justify=tk.CENTER
@@ -566,7 +566,7 @@ class SummaryTab:
                     tk.Label(
                         dates_list,
                         text=f"• {formatted}",
-                        font=("Segoe UI", 8),
+                        font=("Segoe UI", 10),
                         bg="#f8f9fa",
                         fg="#666",
                         anchor=tk.W
@@ -691,7 +691,7 @@ class SummaryTab:
             tk.Label(
                 date_row,
                 text=start_date.strftime("%b %d"),
-                font=("Segoe UI", 8),
+                font=("Segoe UI", 10),
                 bg="#ffffff",
                 fg="#666"
             ).pack(side=tk.LEFT)
@@ -699,7 +699,7 @@ class SummaryTab:
             tk.Label(
                 date_row,
                 text=f"Day {elapsed_days} of {total_days}",
-                font=("Segoe UI", 8),
+                font=("Segoe UI", 10),
                 bg="#ffffff",
                 fg="#666"
             ).pack(side=tk.LEFT, expand=True)
@@ -707,7 +707,7 @@ class SummaryTab:
             tk.Label(
                 date_row,
                 text=end_date.strftime("%b %d"),
-                font=("Segoe UI", 8),
+                font=("Segoe UI", 10),
                 bg="#ffffff",
                 fg="#666"
             ).pack(side=tk.RIGHT)
@@ -927,7 +927,7 @@ class SummaryTab:
         tk.Label(
             card,
             text=label,
-            font=("Segoe UI", 9),
+            font=("Segoe UI", 10),
             fg="#495057",
             bg=bg_color
         ).pack(pady=(2, 8))
@@ -1139,7 +1139,7 @@ class SummaryTab:
             tk.Label(
                 current_frame,
                 text="⚠️ Manual override is active",
-                font=("Segoe UI", 9),
+                font=("Segoe UI", 10),
                 foreground="#ff9800"
             ).pack(anchor=tk.W, padx=10, pady=5)
         
@@ -1150,17 +1150,17 @@ class SummaryTab:
         tk.Label(
             input_frame,
             text="Enter actual attendance data:",
-            font=("Segoe UI", 9)
+            font=("Segoe UI", 10)
         ).pack(anchor=tk.W, padx=10, pady=5)
         
         # Total classes input
-        tk.Label(input_frame, text="Total Classes Held:", font=("Segoe UI", 9)).pack(anchor=tk.W, padx=10, pady=(10, 0))
+        tk.Label(input_frame, text="Total Classes Held:", font=("Segoe UI", 10)).pack(anchor=tk.W, padx=10, pady=(10, 0))
         total_entry = tk.Entry(input_frame, font=("Segoe UI", 10), width=15)
         total_entry.insert(0, str(current_total))
         total_entry.pack(anchor=tk.W, padx=10, pady=5)
         
         # Attended classes input
-        tk.Label(input_frame, text="Classes Attended:", font=("Segoe UI", 9)).pack(anchor=tk.W, padx=10, pady=(10, 0))
+        tk.Label(input_frame, text="Classes Attended:", font=("Segoe UI", 10)).pack(anchor=tk.W, padx=10, pady=(10, 0))
         attended_entry = tk.Entry(input_frame, font=("Segoe UI", 10), width=15)
         attended_entry.insert(0, str(current_attended))
         attended_entry.pack(anchor=tk.W, padx=10, pady=5)
@@ -1169,7 +1169,7 @@ class SummaryTab:
         tk.Label(
             dialog,
             text="💡 Use this when actual attendance differs from timetable\n(cancellations, rescheduling, extra classes, etc.)",
-            font=("Arial", 8),
+            font=("Segoe UI", 10),
             foreground="#6c757d",
             justify=tk.CENTER
         ).pack(pady=10)
