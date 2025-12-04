@@ -48,10 +48,15 @@ class TimetableTab:
         self.timetable_frame.bind("<Configure>", configure_scroll_region)
         canvas.bind("<Configure>", configure_scroll_region)
         
-        # Enable mouse wheel horizontal scrolling
+        # Enable mouse wheel horizontal scrolling (only when hovering over canvas)
         def _on_mousewheel(event):
             canvas.xview_scroll(int(-1*(event.delta/120)), "units")
-        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        def _bind_mousewheel(event):
+            canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        def _unbind_mousewheel(event):
+            canvas.unbind_all("<MouseWheel>")
+        canvas.bind("<Enter>", _bind_mousewheel)
+        canvas.bind("<Leave>", _unbind_mousewheel)
     
     def refresh(self):
         app_data = get_app_data()

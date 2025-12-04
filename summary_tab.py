@@ -46,6 +46,9 @@ class SummaryTab:
         self.canvas_frame = None
         self.sort_column = None
         self.sort_reverse = False
+        self.semester_progress_frame = None
+        self.details_panel = None
+        self.subject_data_cache = {}  # Cache for quick lookup
     
     def create(self):
         """Create the enhanced summary dashboard tab"""
@@ -113,6 +116,10 @@ class SummaryTab:
             fg="#2c3e50"
         ).pack(pady=15)
         
+        # Semester Progress Bar Section
+        self.semester_progress_frame = tk.Frame(self.canvas_frame, bg="#ffffff")
+        self.semester_progress_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
+        
         # Stats cards frame (enhanced)
         self.stats_frame = tk.Frame(self.canvas_frame, bg="#f8f9fa")
         self.stats_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 20))
@@ -121,9 +128,17 @@ class SummaryTab:
         table_container = tk.Frame(self.canvas_frame, bg="#dee2e6", bd=1, relief=tk.SOLID)
         table_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
         
+        # Create a horizontal split: table on left, details panel on right
+        table_split = tk.Frame(table_container, bg="#ffffff")
+        table_split.pack(fill=tk.BOTH, expand=True)
+        
+        # Left side: Table
+        table_left = tk.Frame(table_split, bg="#ffffff")
+        table_left.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
         # Table label
         tk.Label(
-            table_container,
+            table_left,
             text="Subject-wise Attendance Details",
             font=("Segoe UI", 13, "bold"),
             bg="#ffffff",
@@ -133,7 +148,7 @@ class SummaryTab:
         
         # Summary table with enhanced styling
         columns = ("Subject", "Attended", "Total", "Remaining", "Percentage", "Progress", "Status", "Skip", "Action")
-        self.summary_tree = ttk.Treeview(table_container, columns=columns, show="headings", height=12)
+        self.summary_tree = ttk.Treeview(table_left, columns=columns, show="headings", height=12)
         
         # Configure larger font for treeview
         style = ttk.Style()
@@ -158,11 +173,19 @@ class SummaryTab:
             self.summary_tree.column(col, width=width, anchor=anchor)
         
         # Scrollbar for table
-        tree_scroll = ttk.Scrollbar(table_container, orient="vertical", command=self.summary_tree.yview)
+        tree_scroll = ttk.Scrollbar(table_left, orient="vertical", command=self.summary_tree.yview)
         self.summary_tree.configure(yscrollcommand=tree_scroll.set)
         
         self.summary_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(2, 0), pady=(0, 2))
         tree_scroll.pack(side=tk.RIGHT, fill=tk.Y, pady=(0, 2), padx=(0, 2))
+        
+        # Right side: Details Panel (320px fixed width for better visibility)
+        self.details_panel = tk.Frame(table_split, bg="#f8f9fa", width=320)
+        self.details_panel.pack(side=tk.RIGHT, fill=tk.Y, padx=(5, 2), pady=2)
+        self.details_panel.pack_propagate(False)  # Fixed width
+        
+        # Initial placeholder for details panel
+        self.show_details_placeholder()
         
         # Enable mouse wheel scrolling on treeview
         def _on_tree_mousewheel(event):
@@ -171,6 +194,9 @@ class SummaryTab:
         
         # Bind double-click to open override dialog
         self.summary_tree.bind("<Double-Button-1>", self.on_row_double_click)
+        
+        # Bind single-click to show details panel
+        self.summary_tree.bind("<<TreeviewSelect>>", self.on_row_select)
         
         # Tips and actions frame
         action_frame = tk.Frame(self.canvas_frame, bg="#f8f9fa")
@@ -251,12 +277,377 @@ class SummaryTab:
         bar = symbol * filled + "░" * (bar_length - filled)
         return f"{color} {bar}"
     
+    def show_details_placeholder(self):
+        """Show placeholder text in details panel"""
+        for widget in self.details_panel.winfo_children():
+            widget.destroy()
+        
+        tk.Label(
+            self.details_panel,
+            text="📋 Subject Details",
+            font=("Segoe UI", 12, "bold"),
+            bg="#f8f9fa",
+            fg="#495057"
+        ).pack(pady=(15, 10))
+        
+        tk.Label(
+            self.details_panel,
+            text="Click a subject row\nto view details",
+            font=("Segoe UI", 10),
+            bg="#f8f9fa",
+            fg="#6c757d",
+            justify=tk.CENTER
+        ).pack(pady=20)
+    
+    def on_row_select(self, event):
+        """Handle single-click on row to show details panel"""
+        selection = self.summary_tree.selection()
+        if not selection:
+            return
+        
+        item = selection[0]
+        values = self.summary_tree.item(item, "values")
+        if not values:
+            return
+        
+        subject_name = values[0]
+        self.show_subject_details(subject_name)
+    
+    def show_subject_details(self, subject_name):
+        """Display detailed information about a subject in the side panel"""
+        # Clear panel
+        for widget in self.details_panel.winfo_children():
+            widget.destroy()
+        
+        app_data = get_app_data()
+        subject_data = None
+        
+        # Find subject
+        for subj in app_data.get("subjects", []):
+            if subj["name"] == subject_name:
+                subject_data = subj
+                break
+        
+        if not subject_data:
+            self.show_details_placeholder()
+            return
+        
+        # Header with close button
+        header = tk.Frame(self.details_panel, bg="#f8f9fa")
+        header.pack(fill=tk.X, padx=5, pady=(10, 5))
+        
+        tk.Label(
+            header,
+            text="📋 Subject Details",
+            font=("Segoe UI", 11, "bold"),
+            bg="#f8f9fa",
+            fg="#495057"
+        ).pack(side=tk.LEFT)
+        
+        tk.Button(
+            header,
+            text="✕",
+            font=("Segoe UI", 9),
+            bg="#f8f9fa",
+            fg="#666",
+            bd=0,
+            cursor="hand2",
+            command=self.show_details_placeholder
+        ).pack(side=tk.RIGHT)
+        
+        # Subject name
+        tk.Label(
+            self.details_panel,
+            text=subject_name,
+            font=("Segoe UI", 13, "bold"),
+            bg="#f8f9fa",
+            fg="#2c3e50",
+            wraplength=260
+        ).pack(pady=(5, 10), padx=5)
+        
+        # Get cached data or calculate
+        today = datetime.now().strftime("%Y-%m-%d")
+        semester_end = app_data.get("semester_end")
+        end_date = today
+        if semester_end and today > semester_end:
+            end_date = semester_end
+        
+        # Calculate values
+        if subject_data.get("attendance_override"):
+            present = subject_data["attendance_override"]["attended"]
+            total = subject_data["attendance_override"]["total"]
+            is_override = True
+        else:
+            total = count_subject_classes(
+                subject_name,
+                app_data.get("batch", ""),
+                app_data["semester_start"],
+                end_date,
+                app_data.get("holidays", [])
+            )
+            
+            from calculations import parse_date, is_date_in_holidays
+            absent_dates = subject_data.get("absent_dates", [])
+            holidays = app_data.get("holidays", [])
+            absent_count = 0
+            for date_str in absent_dates:
+                if date_str > today:
+                    continue
+                date_obj = parse_date(date_str)
+                if date_obj and not is_date_in_holidays(date_obj, holidays):
+                    absent_count += 1
+            
+            present = max(0, total - absent_count)
+            is_override = False
+        
+        attendance_pct = calculate_attendance(present, total)
+        safe_skip = calculate_safe_skip(present, total)
+        
+        # Stats frame
+        stats_frame = tk.LabelFrame(self.details_panel, text="Statistics", font=("Segoe UI", 9, "bold"), bg="#f8f9fa")
+        stats_frame.pack(fill=tk.X, padx=8, pady=5)
+        
+        stats = [
+            ("Classes Attended", f"{present} / {total}"),
+            ("Attendance", f"{attendance_pct:.1f}%"),
+            ("Can Skip", f"{safe_skip} classes"),
+            ("Weekly Count", f"{subject_data.get('weekly_count', 'N/A')}x/week"),
+        ]
+        
+        for label, value in stats:
+            row = tk.Frame(stats_frame, bg="#f8f9fa")
+            row.pack(fill=tk.X, padx=5, pady=2)
+            tk.Label(row, text=label, font=("Segoe UI", 9), bg="#f8f9fa", fg="#666").pack(side=tk.LEFT)
+            tk.Label(row, text=value, font=("Segoe UI", 9, "bold"), bg="#f8f9fa", fg="#333").pack(side=tk.RIGHT)
+        
+        if is_override:
+            tk.Label(
+                stats_frame,
+                text="⚠️ Manual Override Active",
+                font=("Segoe UI", 8),
+                bg="#f8f9fa",
+                fg="#ff9800"
+            ).pack(pady=(5, 2))
+        
+        # Status indicator
+        if attendance_pct >= 85:
+            status_text = "🟢 Excellent"
+            status_color = COLOR_SAFE
+        elif attendance_pct >= 75:
+            status_text = "🟡 Safe"
+            status_color = COLOR_WARNING
+        else:
+            status_text = "🔴 At Risk"
+            status_color = COLOR_RISK
+            # Show classes needed to reach 75%
+            if total > 0:
+                # Formula: (present + x) / (total + x) >= 0.75
+                # Solving: present + x >= 0.75 * (total + x)
+                # x >= (0.75*total - present) / 0.25
+                classes_needed = max(0, int((0.75 * total - present) / 0.25) + 1)
+                tk.Label(
+                    self.details_panel,
+                    text=f"📈 Need {classes_needed} more classes\nwithout absence to reach 75%",
+                    font=("Segoe UI", 9),
+                    bg="#f8f9fa",
+                    fg=COLOR_RISK,
+                    justify=tk.CENTER
+                ).pack(pady=5)
+        
+        tk.Label(
+            self.details_panel,
+            text=status_text,
+            font=("Segoe UI", 14, "bold"),
+            bg="#f8f9fa",
+            fg=status_color
+        ).pack(pady=10)
+        
+        # Absent dates section
+        absent_dates = subject_data.get("absent_dates", [])
+        if absent_dates:
+            dates_frame = tk.LabelFrame(self.details_panel, text=f"Absent Dates ({len(absent_dates)})", 
+                                        font=("Segoe UI", 9, "bold"), bg="#f8f9fa")
+            dates_frame.pack(fill=tk.BOTH, expand=True, padx=8, pady=5)
+            
+            # Scrollable list
+            dates_canvas = tk.Canvas(dates_frame, bg="#f8f9fa", height=100, highlightthickness=0)
+            dates_scrollbar = ttk.Scrollbar(dates_frame, orient="vertical", command=dates_canvas.yview)
+            dates_list = tk.Frame(dates_canvas, bg="#f8f9fa")
+            
+            dates_canvas.configure(yscrollcommand=dates_scrollbar.set)
+            dates_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+            dates_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            
+            dates_canvas.create_window((0, 0), window=dates_list, anchor="nw")
+            dates_list.bind("<Configure>", lambda e: dates_canvas.configure(scrollregion=dates_canvas.bbox("all")))
+            
+            # Sort dates (most recent first)
+            sorted_dates = sorted(absent_dates, reverse=True)
+            for date_str in sorted_dates[:15]:  # Show max 15 dates
+                try:
+                    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                    formatted = date_obj.strftime("%b %d, %Y (%a)")
+                    tk.Label(
+                        dates_list,
+                        text=f"• {formatted}",
+                        font=("Segoe UI", 8),
+                        bg="#f8f9fa",
+                        fg="#666",
+                        anchor=tk.W
+                    ).pack(anchor=tk.W, padx=5)
+                except:
+                    pass
+            
+            if len(absent_dates) > 15:
+                tk.Label(
+                    dates_list,
+                    text=f"... and {len(absent_dates) - 15} more",
+                    font=("Segoe UI", 8, "italic"),
+                    bg="#f8f9fa",
+                    fg="#999"
+                ).pack(anchor=tk.W, padx=5)
+        else:
+            tk.Label(
+                self.details_panel,
+                text="✨ No absences recorded!",
+                font=("Segoe UI", 10),
+                bg="#f8f9fa",
+                fg=COLOR_SAFE
+            ).pack(pady=10)
+        
+        # Edit button
+        ttk.Button(
+            self.details_panel,
+            text="✏️ Edit Attendance",
+            command=lambda: self.open_override_dialog(subject_name)
+        ).pack(pady=10)
+    
+    def update_semester_progress(self):
+        """Update the semester progress bar and days left display"""
+        # Clear existing
+        for widget in self.semester_progress_frame.winfo_children():
+            widget.destroy()
+        
+        app_data = get_app_data()
+        semester_start = app_data.get("semester_start")
+        semester_end = app_data.get("semester_end")
+        
+        if not semester_start or not semester_end:
+            return
+        
+        try:
+            start_date = datetime.strptime(semester_start, "%Y-%m-%d")
+            end_date = datetime.strptime(semester_end, "%Y-%m-%d")
+            today = datetime.now()
+            
+            total_days = (end_date - start_date).days
+            elapsed_days = (today - start_date).days
+            remaining_days = (end_date - today).days
+            
+            # Clamp values
+            elapsed_days = max(0, min(elapsed_days, total_days))
+            remaining_days = max(0, remaining_days)
+            
+            progress_pct = (elapsed_days / total_days * 100) if total_days > 0 else 0
+            
+            # Container
+            container = tk.Frame(self.semester_progress_frame, bg="#ffffff")
+            container.pack(fill=tk.X, padx=10, pady=5)
+            
+            # Header row
+            header_row = tk.Frame(container, bg="#ffffff")
+            header_row.pack(fill=tk.X)
+            
+            tk.Label(
+                header_row,
+                text="📅 Semester Progress",
+                font=("Segoe UI", 11, "bold"),
+                bg="#ffffff",
+                fg="#495057"
+            ).pack(side=tk.LEFT)
+            
+            # Days remaining badge
+            if remaining_days > 0:
+                days_text = f"📆 {remaining_days} days left"
+                days_color = "#28a745" if remaining_days > 30 else ("#ffc107" if remaining_days > 14 else "#dc3545")
+            else:
+                days_text = "✅ Semester Complete"
+                days_color = "#28a745"
+            
+            tk.Label(
+                header_row,
+                text=days_text,
+                font=("Segoe UI", 10, "bold"),
+                bg="#ffffff",
+                fg=days_color
+            ).pack(side=tk.RIGHT)
+            
+            # Progress bar container
+            progress_container = tk.Frame(container, bg="#e9ecef", height=20)
+            progress_container.pack(fill=tk.X, pady=(8, 5))
+            progress_container.pack_propagate(False)
+            
+            # Filled portion
+            fill_width = max(1, int(progress_pct))
+            if progress_pct >= 75:
+                bar_color = "#dc3545"  # Red - semester almost over
+            elif progress_pct >= 50:
+                bar_color = "#ffc107"  # Yellow - halfway
+            else:
+                bar_color = "#28a745"  # Green - early
+            
+            progress_fill = tk.Frame(progress_container, bg=bar_color)
+            progress_fill.place(relwidth=progress_pct/100, relheight=1)
+            
+            # Progress text overlay
+            tk.Label(
+                progress_container,
+                text=f"{progress_pct:.0f}%",
+                font=("Segoe UI", 9, "bold"),
+                bg=bar_color if progress_pct > 50 else "#e9ecef",
+                fg="white" if progress_pct > 50 else "#333"
+            ).place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+            
+            # Date labels
+            date_row = tk.Frame(container, bg="#ffffff")
+            date_row.pack(fill=tk.X)
+            
+            tk.Label(
+                date_row,
+                text=start_date.strftime("%b %d"),
+                font=("Segoe UI", 8),
+                bg="#ffffff",
+                fg="#666"
+            ).pack(side=tk.LEFT)
+            
+            tk.Label(
+                date_row,
+                text=f"Day {elapsed_days} of {total_days}",
+                font=("Segoe UI", 8),
+                bg="#ffffff",
+                fg="#666"
+            ).pack(side=tk.LEFT, expand=True)
+            
+            tk.Label(
+                date_row,
+                text=end_date.strftime("%b %d"),
+                font=("Segoe UI", 8),
+                bg="#ffffff",
+                fg="#666"
+            ).pack(side=tk.RIGHT)
+            
+        except Exception as e:
+            print(f"Error updating semester progress: {e}")
+
     def refresh(self):
         """Refresh summary display with enhanced visualizations"""
         app_data = get_app_data()
         
         # Optimize UI updates
         self.summary_tree.update_idletasks()
+        
+        # Update semester progress bar
+        self.update_semester_progress()
         
         # Clear existing items
         for item in self.summary_tree.get_children():
@@ -557,19 +948,18 @@ class SummaryTab:
             messagebox.showerror("Error", "Subject not found")
             return
         
-        # Create dialog
+        # Create dialog with proper sizing
         dialog = tk.Toplevel()
         dialog.title(f"Manual Override - {subject_name}")
-        dialog.geometry("500x450")
         dialog.resizable(True, True)
         
-        # Center the dialog
-        dialog.update_idletasks()
-        width = dialog.winfo_width()
-        height = dialog.winfo_height()
+        # Set size and center the dialog
+        width = 500
+        height = 500
         x = (dialog.winfo_screenwidth() // 2) - (width // 2)
         y = (dialog.winfo_screenheight() // 2) - (height // 2)
         dialog.geometry(f'{width}x{height}+{x}+{y}')
+        dialog.minsize(400, 400)  # Minimum size
         
         dialog.transient(self.notebook.master)
         dialog.grab_set()

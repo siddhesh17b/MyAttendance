@@ -45,8 +45,8 @@ class AttendanceCalendar:
     def create(self):
         """Create the main tab with calendar and side panel"""
         tab = ttk.Frame(self.notebook)
-        tab.columnconfigure(0, weight=3)
-        tab.columnconfigure(1, weight=1)
+        tab.columnconfigure(0, weight=3, minsize=700)  # Calendar area
+        tab.columnconfigure(1, weight=1, minsize=300)  # Side panel
         tab.rowconfigure(1, weight=1)
         
         # Header with month navigation

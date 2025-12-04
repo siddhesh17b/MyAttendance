@@ -33,6 +33,7 @@ class BunkBuddyApp:
         x = (root.winfo_screenwidth() // 2) - (width // 2)
         y = (root.winfo_screenheight() // 2) - (height // 2)
         self.root.geometry(f"{width}x{height}+{x}+{y}")
+        self.root.minsize(1200, 800)  # Minimum window size to prevent squishing
         self.root.configure(bg=COLOR_BG_LIGHT)
         
         # Optimize rendering
