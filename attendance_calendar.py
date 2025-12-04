@@ -293,6 +293,10 @@ class AttendanceCalendar:
         if "skipped_days" not in app_data:
             app_data["skipped_days"] = []
         
+        # Check if this date is already a holiday (holidays take priority)
+        existing_holidays = set(h.get("date", h.get("start", "")) for h in app_data.get("holidays", []))
+        is_holiday = date_str in existing_holidays
+        
         if all_absent:
             # Already completely skipped - make all present (remove ALL absences for this date)
             for subject in subjects:
@@ -302,12 +306,23 @@ class AttendanceCalendar:
                     while date_str in subject_data.get("absent_dates", []):
                         subject_data["absent_dates"].remove(date_str)
             
-            # Remove from skipped_days list
+            # Remove from skipped_days list (new format: {reason, date})
             app_data["skipped_days"] = [
                 skipped for skipped in app_data["skipped_days"]
-                if not (skipped["start"] == date_str and skipped["end"] == date_str)
+                if skipped.get("date", skipped.get("start", "")) != date_str
             ]
         else:
+            # Check if this date is a holiday - if so, don't allow marking absent
+            if is_holiday:
+                messagebox.showinfo("Info", "This date is a holiday. Cannot mark as absent.")
+                return
+            
+            # Check if already a skipped day
+            existing_skipped = set(s.get("date", s.get("start", "")) for s in app_data.get("skipped_days", []))
+            if date_str in existing_skipped:
+                messagebox.showinfo("Info", "This date is already marked as skipped.")
+                return
+            
             # Not completely skipped - mark ALL occurrences of all subjects as absent
             for subject in subjects:
                 subject_data = next((s for s in app_data["subjects"] if s["name"] == subject), None)
@@ -317,15 +332,12 @@ class AttendanceCalendar:
                     # Add date (will be added once per occurrence in subjects list)
                     subject_data["absent_dates"].append(date_str)
             
-            # Add to skipped_days list (single day)
+            # Add to skipped_days list (new format: {reason, date})
             formatted_date = date_obj.strftime("%d %b %Y")
-            if not any(skipped["start"] == date_str and skipped["end"] == date_str 
-                      for skipped in app_data["skipped_days"]):
-                app_data["skipped_days"].append({
-                    "name": f"Right-click: {formatted_date}",
-                    "start": date_str,
-                    "end": date_str
-                })
+            app_data["skipped_days"].append({
+                "reason": f"Right-click: {formatted_date}",
+                "date": date_str
+            })
         
         save_data()
         self.refresh()
@@ -554,16 +566,18 @@ class AttendanceCalendar:
         app_data = get_app_data()
         holidays = app_data.get("holidays", [])
         
-        # Check if date is already a holiday
-        existing_holiday = None
-        for holiday in holidays:
-            if holiday["start"] == date_str and holiday["end"] == date_str:
-                existing_holiday = holiday
+        # Check if date is already a holiday (support both old and new format)
+        existing_idx = None
+        for idx, holiday in enumerate(holidays):
+            # New format: {name, date} or Old format: {name, start, end}
+            holiday_date = holiday.get("date", holiday.get("start", ""))
+            if holiday_date == date_str:
+                existing_idx = idx
                 break
         
-        if existing_holiday:
+        if existing_idx is not None:
             # Remove holiday
-            holidays.remove(existing_holiday)
+            del holidays[existing_idx]
             messagebox.showinfo("Updated", "Date marked as regular day")
         else:
             # Validate date is within semester when adding
@@ -578,11 +592,10 @@ class AttendanceCalendar:
                     )
                     return
             
-            # Add as single-day holiday
+            # Add as single-day holiday (new format)
             holidays.append({
-                "start": date_str,
-                "end": date_str,
-                "name": "Holiday"
+                "name": "Holiday",
+                "date": date_str
             })
             messagebox.showinfo("Updated", "Date marked as holiday")
         
@@ -596,10 +609,13 @@ class AttendanceCalendar:
         holidays = app_data.get("holidays", [])
         
         for holiday in holidays:
-            start = holiday["start"]
-            end = holiday["end"]
-            if start <= date_str <= end:
-                return True
+            # Support both new format {name, date} and old format {name, start, end}
+            if "date" in holiday:
+                if holiday["date"] == date_str:
+                    return True
+            elif "start" in holiday and "end" in holiday:
+                if holiday["start"] <= date_str <= holiday["end"]:
+                    return True
         return False
     
     def get_day_status(self, date_str):

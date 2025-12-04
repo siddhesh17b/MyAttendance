@@ -162,17 +162,30 @@ class SetupTab:
                                       font=("Arial", 11, "bold"), padx=10, pady=10)
         self.holidays_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        self.holidays_tree = ttk.Treeview(self.holidays_frame, columns=("Name", "Start", "End"), 
+        self.holidays_tree = ttk.Treeview(self.holidays_frame, columns=("No", "Name", "Date"), 
                                          show="headings", height=6)
+        self.holidays_tree.heading("No", text="#")
         self.holidays_tree.heading("Name", text="Holiday Name")
-        self.holidays_tree.heading("Start", text="Start Date")
-        self.holidays_tree.heading("End", text="End Date")
+        self.holidays_tree.heading("Date", text="Date")
+        self.holidays_tree.column("No", width=40, minwidth=30, stretch=False)
+        self.holidays_tree.column("Name", width=200, minwidth=150)
+        self.holidays_tree.column("Date", width=120, minwidth=100)
         self.holidays_tree.pack(fill=tk.BOTH, expand=True, pady=5)
         
-        # Enable mouse wheel scrolling on holidays tree
+        # Enable isolated mouse wheel scrolling on holidays tree
+        # Uses Enter/Leave binding to prevent scrolling the whole tab
         def _on_holidays_mousewheel(event):
             self.holidays_tree.yview_scroll(int(-1*(event.delta/120)), "units")
-        self.holidays_tree.bind("<MouseWheel>", _on_holidays_mousewheel)
+            return "break"  # Stop event propagation
+        
+        def _bind_holidays_mousewheel(event):
+            self.holidays_tree.bind_all("<MouseWheel>", _on_holidays_mousewheel)
+        
+        def _unbind_holidays_mousewheel(event):
+            self.holidays_tree.unbind_all("<MouseWheel>")
+        
+        self.holidays_tree.bind("<Enter>", _bind_holidays_mousewheel)
+        self.holidays_tree.bind("<Leave>", _unbind_holidays_mousewheel)
         
         btn_frame = tk.Frame(self.holidays_frame)
         btn_frame.pack(fill=tk.X, pady=5)
@@ -226,17 +239,30 @@ class SetupTab:
             justify=tk.LEFT
         ).pack(pady=5)
         
-        self.skipped_tree = ttk.Treeview(self.skipped_frame, columns=("Name", "Start", "End"), 
+        self.skipped_tree = ttk.Treeview(self.skipped_frame, columns=("No", "Name", "Date"), 
                                          show="headings", height=4)
+        self.skipped_tree.heading("No", text="#")
         self.skipped_tree.heading("Name", text="Reason")
-        self.skipped_tree.heading("Start", text="Start Date")
-        self.skipped_tree.heading("End", text="End Date")
+        self.skipped_tree.heading("Date", text="Date")
+        self.skipped_tree.column("No", width=40, minwidth=30, stretch=False)
+        self.skipped_tree.column("Name", width=200, minwidth=150)
+        self.skipped_tree.column("Date", width=120, minwidth=100)
         self.skipped_tree.pack(fill=tk.BOTH, expand=True, pady=5)
         
-        # Enable mouse wheel scrolling on skipped days tree
+        # Enable isolated mouse wheel scrolling on skipped days tree
+        # Uses Enter/Leave binding to prevent scrolling the whole tab
         def _on_skipped_mousewheel(event):
             self.skipped_tree.yview_scroll(int(-1*(event.delta/120)), "units")
-        self.skipped_tree.bind("<MouseWheel>", _on_skipped_mousewheel)
+            return "break"  # Stop event propagation
+        
+        def _bind_skipped_mousewheel(event):
+            self.skipped_tree.bind_all("<MouseWheel>", _on_skipped_mousewheel)
+        
+        def _unbind_skipped_mousewheel(event):
+            self.skipped_tree.unbind_all("<MouseWheel>")
+        
+        self.skipped_tree.bind("<Enter>", _bind_skipped_mousewheel)
+        self.skipped_tree.bind("<Leave>", _unbind_skipped_mousewheel)
         
         skipped_btn_frame = tk.Frame(self.skipped_frame)
         skipped_btn_frame.pack(fill=tk.X, pady=5)
@@ -285,20 +311,25 @@ class SetupTab:
         return tab
     
     def refresh(self):
-        """Refresh holidays and skipped days lists"""
+        """Refresh holidays and skipped days lists with serial numbers"""
         app_data = get_app_data()
         
-        # Refresh holidays
+        # Refresh holidays with serial numbers (individual date format)
         for item in self.holidays_tree.get_children():
             self.holidays_tree.delete(item)
-        for holiday in app_data.get("holidays", []):
-            self.holidays_tree.insert("", tk.END, values=(holiday["name"], holiday["start"], holiday["end"]))
+        for idx, holiday in enumerate(app_data.get("holidays", []), start=1):
+            # Support both old format {name, start, end} and new format {name, date}
+            date_val = holiday.get("date", holiday.get("start", ""))
+            self.holidays_tree.insert("", tk.END, values=(idx, holiday["name"], date_val))
         
-        # Refresh skipped days
+        # Refresh skipped days with serial numbers (individual date format)
         for item in self.skipped_tree.get_children():
             self.skipped_tree.delete(item)
-        for skipped in app_data.get("skipped_days", []):
-            self.skipped_tree.insert("", tk.END, values=(skipped["name"], skipped["start"], skipped["end"]))
+        for idx, skipped in enumerate(app_data.get("skipped_days", []), start=1):
+            # Support both old format {name, start, end} and new format {reason, date}
+            date_val = skipped.get("date", skipped.get("start", ""))
+            reason = skipped.get("reason", skipped.get("name", ""))
+            self.skipped_tree.insert("", tk.END, values=(idx, reason, date_val))
     
     def extract_batch_names(self):
         """
@@ -445,55 +476,56 @@ class SetupTab:
             messagebox.showinfo("Success", "Semester dates updated!")
     
     def add_holiday(self):
-        """Add a holiday period"""
+        """Add a holiday period with improved dialog layout"""
         app_data = get_app_data()
         dialog = tk.Toplevel()
         dialog.title("Add Holiday Period")
         dialog.resizable(True, True)
         
-        # Center the dialog window with increased size
-        width = 500
-        height = 650
+        # Center the dialog window with compact size
+        width = 620
+        height = 420
         x = (dialog.winfo_screenwidth() // 2) - (width // 2)
         y = (dialog.winfo_screenheight() // 2) - (height // 2)
         dialog.geometry(f"{width}x{height}+{x}+{y}")
         
-        # Create scrollable container
-        canvas = tk.Canvas(dialog)
-        scrollbar = ttk.Scrollbar(dialog, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
+        # Main container with padding
+        main_frame = ttk.Frame(dialog, padding=15)
+        main_frame.pack(fill="both", expand=True)
         
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
+        # Title
+        title_label = tk.Label(main_frame, text="🏖️ Add Holiday Period", 
+                               font=("Segoe UI", 14, "bold"), fg="#007bff")
+        title_label.pack(pady=(0, 15))
         
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
+        # Holiday name input
+        name_frame = ttk.Frame(main_frame)
+        name_frame.pack(fill="x", pady=(0, 15))
+        tk.Label(name_frame, text="Holiday Name:", font=("Segoe UI", 10, "bold")).pack(side="left", padx=(0, 10))
+        name_entry = ttk.Entry(name_frame, width=40, font=("Segoe UI", 10))
+        name_entry.pack(side="left", fill="x", expand=True)
+        name_entry.insert(0, "")
+        name_entry.focus_set()
         
-        # Enable mouse wheel scrolling
-        def _on_mousewheel(event):
-            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        canvas.bind("<MouseWheel>", _on_mousewheel)
-        scrollable_frame.bind("<MouseWheel>", _on_mousewheel)
+        # Calendars side by side
+        calendars_frame = ttk.Frame(main_frame)
+        calendars_frame.pack(fill="both", expand=True, pady=10)
         
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
+        # Start date calendar (left)
+        start_frame = ttk.LabelFrame(calendars_frame, text="Start Date", padding=10)
+        start_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
+        start_cal = Calendar(start_frame, selectmode='day', date_pattern='yyyy-mm-dd')
+        start_cal.pack()
         
-        tk.Label(scrollable_frame, text="Reason (e.g., Sick, Personal):", font=("Segoe UI", 10, "bold")).pack(pady=5)
-        tk.Label(scrollable_frame, text="Holiday Name:", font=("Segoe UI", 10, "bold")).pack(pady=5)
-        name_entry = ttk.Entry(scrollable_frame, width=30)
-        name_entry.pack()
+        # End date calendar (right)
+        end_frame = ttk.LabelFrame(calendars_frame, text="End Date", padding=10)
+        end_frame.pack(side="left", fill="both", expand=True)
+        end_cal = Calendar(end_frame, selectmode='day', date_pattern='yyyy-mm-dd')
+        end_cal.pack()
         
-        # Start date calendar
-        tk.Label(scrollable_frame, text="Start Date:", font=("Segoe UI", 10, "bold")).pack(pady=(10, 5))
-        start_cal = Calendar(scrollable_frame, selectmode='day', date_pattern='yyyy-mm-dd')
-        start_cal.pack(pady=5)
-        
-        # End date calendar
-        tk.Label(scrollable_frame, text="End Date:", font=("Segoe UI", 10, "bold")).pack(pady=(10, 5))
-        end_cal = Calendar(scrollable_frame, selectmode='day', date_pattern='yyyy-mm-dd')
-        end_cal.pack(pady=5)
+        # Button frame at bottom
+        btn_frame = ttk.Frame(main_frame)
+        btn_frame.pack(fill="x", pady=(15, 0))
         
         def save_holiday():
             name = name_entry.get().strip()
@@ -506,6 +538,10 @@ class SetupTab:
             
             if not parse_date(start) or not parse_date(end):
                 messagebox.showerror("Error", "Invalid date format")
+                return
+            
+            if start > end:
+                messagebox.showerror("Error", "Start date must be before or equal to end date")
                 return
             
             # Validate dates are within semester range
@@ -521,13 +557,42 @@ class SetupTab:
                     )
                     return
             
-            app_data["holidays"].append({"name": name, "start": start, "end": end})
+            # Add each day as individual holiday entry
+            from datetime import datetime, timedelta
+            try:
+                start_date = datetime.strptime(start, "%Y-%m-%d")
+                end_date = datetime.strptime(end, "%Y-%m-%d")
+            except ValueError:
+                messagebox.showerror("Error", "Invalid date format")
+                return
+            
+            # Check for existing holidays on these dates
+            existing_holidays = set(h.get("date", h.get("start", "")) for h in app_data.get("holidays", []))
+            added_count = 0
+            skipped_count = 0
+            
+            current = start_date
+            while current <= end_date:
+                date_str = current.strftime("%Y-%m-%d")
+                if date_str not in existing_holidays:
+                    app_data["holidays"].append({"name": name, "date": date_str})
+                    added_count += 1
+                else:
+                    skipped_count += 1
+                current += timedelta(days=1)
+            
             save_data()
             self.refresh()
             self.refresh_all_tabs()
             dialog.destroy()
+            
+            if skipped_count > 0:
+                messagebox.showinfo("Success", f"Added {added_count} holiday(s).\n{skipped_count} date(s) were already holidays.")
+            else:
+                messagebox.showinfo("Success", f"Added {added_count} holiday(s).")
         
-        ttk.Button(scrollable_frame, text="Save", command=save_holiday).pack(pady=10)
+        ttk.Button(btn_frame, text="Cancel", command=dialog.destroy).pack(side="right", padx=5)
+        ttk.Button(btn_frame, text="✓ Save Holiday", command=save_holiday).pack(side="right", padx=5)
     
     def remove_holiday(self):
         """Remove selected holiday"""
@@ -552,61 +617,69 @@ class SetupTab:
         self.refresh_all_tabs()
     
     def add_skipped_days(self):
-        """Add a skipped days period"""
+        """Add a skipped days period with improved dialog layout"""
         app_data = get_app_data()
         dialog = tk.Toplevel()
         dialog.title("Add Skipped Period")
         dialog.resizable(True, True)
         
-        # Center the dialog window with increased size
-        width = 500
-        height = 700
+        # Center the dialog window with compact size
+        width = 620
+        height = 460
         x = (dialog.winfo_screenwidth() // 2) - (width // 2)
         y = (dialog.winfo_screenheight() // 2) - (height // 2)
         dialog.geometry(f"{width}x{height}+{x}+{y}")
         
-        # Create scrollable container
-        canvas = tk.Canvas(dialog)
-        scrollbar = ttk.Scrollbar(dialog, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
+        # Main container with padding
+        main_frame = ttk.Frame(dialog, padding=15)
+        main_frame.pack(fill="both", expand=True)
         
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
+        # Title
+        title_label = tk.Label(main_frame, text="📅 Add Skipped Period", 
+                               font=("Segoe UI", 14, "bold"), fg="#dc3545")
+        title_label.pack(pady=(0, 10))
         
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-        
-        # Enable mouse wheel scrolling
-        def _on_mousewheel(event):
-            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        canvas.bind("<MouseWheel>", _on_mousewheel)
-        scrollable_frame.bind("<MouseWheel>", _on_mousewheel)
-        
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-        
-        tk.Label(scrollable_frame, text="Reason (e.g., Sick, Personal):", font=("Segoe UI", 10, "bold")).pack(pady=5)
-        name_entry = ttk.Entry(scrollable_frame, width=30)
-        name_entry.pack()
-        
-        # Start date calendar
-        tk.Label(scrollable_frame, text="Start Date:", font=("Segoe UI", 10, "bold")).pack(pady=(10, 5))
-        start_cal = Calendar(scrollable_frame, selectmode='day', date_pattern='yyyy-mm-dd')
-        start_cal.pack(pady=5)
-        
-        # End date calendar
-        tk.Label(scrollable_frame, text="End Date:", font=("Segoe UI", 10, "bold")).pack(pady=(10, 5))
-        end_cal = Calendar(scrollable_frame, selectmode='day', date_pattern='yyyy-mm-dd')
-        end_cal.pack(pady=5)
-        
-        tk.Label(
-            scrollable_frame, 
+        # Warning message
+        warning_label = tk.Label(
+            main_frame, 
             text="⚠️ All classes in this period will be marked absent",
-            font=("Arial", 9),
-            foreground="#dc3545"
-        ).pack(pady=5)
+            font=("Segoe UI", 9),
+            fg="#dc3545"
+        )
+        warning_label.pack(pady=(0, 10))
+        
+        # Reason input
+        reason_frame = ttk.Frame(main_frame)
+        reason_frame.pack(fill="x", pady=(0, 15))
+        tk.Label(reason_frame, text="Reason:", font=("Segoe UI", 10, "bold")).pack(side="left", padx=(0, 10))
+        name_entry = ttk.Entry(reason_frame, width=40, font=("Segoe UI", 10))
+        name_entry.pack(side="left", fill="x", expand=True)
+        name_entry.insert(0, "")
+        name_entry.focus_set()
+        
+        # Placeholder hint
+        tk.Label(reason_frame, text="(e.g., Sick, Personal, Family)", 
+                 font=("Segoe UI", 8), fg="#6c757d").pack(side="left", padx=5)
+        
+        # Calendars side by side
+        calendars_frame = ttk.Frame(main_frame)
+        calendars_frame.pack(fill="both", expand=True, pady=10)
+        
+        # Start date calendar (left)
+        start_frame = ttk.LabelFrame(calendars_frame, text="Start Date", padding=10)
+        start_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
+        start_cal = Calendar(start_frame, selectmode='day', date_pattern='yyyy-mm-dd')
+        start_cal.pack()
+        
+        # End date calendar (right)
+        end_frame = ttk.LabelFrame(calendars_frame, text="End Date", padding=10)
+        end_frame.pack(side="left", fill="both", expand=True)
+        end_cal = Calendar(end_frame, selectmode='day', date_pattern='yyyy-mm-dd')
+        end_cal.pack()
+        
+        # Button frame at bottom
+        btn_frame = ttk.Frame(main_frame)
+        btn_frame.pack(fill="x", pady=(15, 0))
         
         def save_skipped():
             name = name_entry.get().strip()
@@ -619,6 +692,10 @@ class SetupTab:
             
             if not parse_date(start) or not parse_date(end):
                 messagebox.showerror("Error", "Invalid date format")
+                return
+            
+            if start > end:
+                messagebox.showerror("Error", "Start date must be before or equal to end date")
                 return
             
             # Validate dates are within semester range
@@ -635,7 +712,7 @@ class SetupTab:
                     return
             
             # Validate dates are not in the future
-            from datetime import datetime
+            from datetime import datetime, timedelta
             today = datetime.now().strftime("%Y-%m-%d")
             if start > today:
                 messagebox.showerror(
@@ -650,10 +727,10 @@ class SetupTab:
             if "skipped_days" not in app_data:
                 app_data["skipped_days"] = []
             
-            app_data["skipped_days"].append({"name": name, "start": start, "end": end})
+            # Get existing holidays and skipped days to check for overlaps
+            existing_holidays = set(h.get("date", h.get("start", "")) for h in app_data.get("holidays", []))
+            existing_skipped = set(s.get("date", s.get("start", "")) for s in app_data.get("skipped_days", []))
             
-            # Mark all subjects as absent for this period
-            from datetime import datetime, timedelta
             try:
                 start_date = datetime.strptime(start, "%Y-%m-%d")
                 end_date = datetime.strptime(end, "%Y-%m-%d")
@@ -664,14 +741,33 @@ class SetupTab:
             
             current = start_date
             batch = app_data.get("batch", "B1/B3")
+            added_count = 0
+            skipped_holiday = 0
+            skipped_duplicate = 0
             
             while current <= end_date:
                 date_str = current.strftime("%Y-%m-%d")
+                
+                # Skip if date is a holiday (holidays take priority)
+                if date_str in existing_holidays:
+                    skipped_holiday += 1
+                    current += timedelta(days=1)
+                    continue
+                
+                # Skip if already marked as skipped
+                if date_str in existing_skipped:
+                    skipped_duplicate += 1
+                    current += timedelta(days=1)
+                    continue
+                
+                # Add this date as a skipped day
+                app_data["skipped_days"].append({"reason": name, "date": date_str})
+                added_count += 1
+                
+                # Mark all subjects as absent for this date
                 day_name = current.strftime("%A").upper()
                 subjects = get_subjects_for_day(day_name, batch)
                 
-                # For each subject occurrence (handles multi-occurrence subjects)
-                # subjects list may contain duplicates for subjects appearing multiple times
                 for subject in subjects:
                     subject_data = next((s for s in app_data["subjects"] if s["name"] == subject), None)
                     if subject_data:
@@ -686,9 +782,17 @@ class SetupTab:
             self.refresh()
             self.refresh_all_tabs()
             dialog.destroy()
-            messagebox.showinfo("Success", f"Marked all classes as absent from {start} to {end}")
+            
+            # Build result message
+            msg_parts = [f"Marked {added_count} day(s) as absent."]
+            if skipped_holiday > 0:
+                msg_parts.append(f"{skipped_holiday} day(s) skipped (already holidays).")
+            if skipped_duplicate > 0:
+                msg_parts.append(f"{skipped_duplicate} day(s) skipped (already marked).")
+            messagebox.showinfo("Success", "\n".join(msg_parts))
         
-        ttk.Button(scrollable_frame, text="Save", command=save_skipped).pack(pady=10)
+        ttk.Button(btn_frame, text="Cancel", command=dialog.destroy).pack(side="right", padx=5)
+        ttk.Button(btn_frame, text="✓ Save & Mark Absent", command=save_skipped).pack(side="right", padx=5)
     
     def remove_skipped_days(self):
         """Remove selected skipped period and its absence marks"""
@@ -713,30 +817,30 @@ class SetupTab:
             messagebox.showerror("Error", f"Failed to access skipped period: {str(e)}")
             return
         
-        # Automatically remove absence marks for this period
-        from datetime import datetime, timedelta
-        try:
-            start_date = datetime.strptime(skipped["start"], "%Y-%m-%d")
-            end_date = datetime.strptime(skipped["end"], "%Y-%m-%d")
-        except (ValueError, KeyError) as e:
-            messagebox.showerror("Error", f"Invalid date format in skipped period: {str(e)}")
+        # Get the date from new format or fallback to old format
+        date_str = skipped.get("date", skipped.get("start", ""))
+        if not date_str:
+            messagebox.showerror("Error", "Invalid skipped day entry - no date found")
             return
-        current = start_date
-        batch = app_data.get("batch", "B1/B3")
         
-        while current <= end_date:
-            date_str = current.strftime("%Y-%m-%d")
-            day_name = current.strftime("%A").upper()
-            subjects = get_subjects_for_day(day_name, batch)
-            
-            # For each subject occurrence (handles multi-occurrence subjects)
-            for subject in subjects:
-                subject_data = next((s for s in app_data["subjects"] if s["name"] == subject), None)
-                # Remove ONE occurrence per loop iteration (matches how they were added)
-                if subject_data and date_str in subject_data.get("absent_dates", []):
-                    subject_data["absent_dates"].remove(date_str)
-            
-            current += timedelta(days=1)
+        # Remove absence marks for this single date
+        from datetime import datetime
+        try:
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+        except ValueError as e:
+            messagebox.showerror("Error", f"Invalid date format: {str(e)}")
+            return
+        
+        batch = app_data.get("batch", "B1/B3")
+        day_name = date_obj.strftime("%A").upper()
+        subjects = get_subjects_for_day(day_name, batch)
+        
+        # For each subject occurrence (handles multi-occurrence subjects)
+        for subject in subjects:
+            subject_data = next((s for s in app_data["subjects"] if s["name"] == subject), None)
+            # Remove ONE occurrence per subject in the list (matches how they were added)
+            if subject_data and date_str in subject_data.get("absent_dates", []):
+                subject_data["absent_dates"].remove(date_str)
         
         del app_data["skipped_days"][index]
         save_data()

@@ -29,24 +29,35 @@ def parse_date(date_str):
 
 
 def is_date_in_holidays(date, holidays):
-    """Check if a date falls within any holiday period
+    """Check if a date falls within any holiday
+    
+    Supports two formats:
+    - New format: {name, date} - individual dates
+    - Old format: {name, start, end} - date ranges (for backwards compatibility)
     
     Args:
         date: datetime object to check
-        holidays: List of holiday dicts with 'start' and 'end' keys
+        holidays: List of holiday dicts
     
     Returns:
-        bool: True if date is within any holiday period
+        bool: True if date is a holiday
     """
     if not date or not holidays:
         return False
     
     for holiday in holidays:
         try:
-            start = parse_date(holiday.get('start'))
-            end = parse_date(holiday.get('end'))
-            if start and end and start <= date <= end:
-                return True
+            # New format: individual date
+            if "date" in holiday:
+                holiday_date = parse_date(holiday.get('date'))
+                if holiday_date and holiday_date.date() == date.date():
+                    return True
+            # Old format: date range (backwards compatibility)
+            elif "start" in holiday and "end" in holiday:
+                start = parse_date(holiday.get('start'))
+                end = parse_date(holiday.get('end'))
+                if start and end and start <= date <= end:
+                    return True
         except (KeyError, TypeError, AttributeError):
             # Skip malformed holiday entries
             continue

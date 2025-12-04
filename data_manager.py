@@ -260,14 +260,21 @@ def count_subject_classes(subject_name, batch, start_date_str, end_date_str, hol
     if not subject_schedule:
         return 0
     
-    # Helper to check if a date is a holiday
+    # Helper to check if a date is a holiday (supports both formats)
     def is_holiday(date):
         for holiday in holidays:
             try:
-                h_start = datetime.strptime(holiday['start'], "%Y-%m-%d")
-                h_end = datetime.strptime(holiday['end'], "%Y-%m-%d")
-                if h_start <= date <= h_end:
-                    return True
+                # New format: {name, date}
+                if "date" in holiday:
+                    h_date = datetime.strptime(holiday['date'], "%Y-%m-%d")
+                    if h_date == date:
+                        return True
+                # Old format: {name, start, end}
+                elif "start" in holiday and "end" in holiday:
+                    h_start = datetime.strptime(holiday['start'], "%Y-%m-%d")
+                    h_end = datetime.strptime(holiday['end'], "%Y-%m-%d")
+                    if h_start <= date <= h_end:
+                        return True
             except (ValueError, TypeError, KeyError):
                 continue
         return False
