@@ -232,6 +232,7 @@ MONDAY,09:00-10:00,Mathematics
 
 ### Example
 ```
+Day,Time,Subject
 MONDAY,09:00-10:00,Mathematics
 MONDAY,10:00-11:00,Physics
 MONDAY,11:00-12:00,Lunch
