@@ -24,7 +24,7 @@ env/
 .coverage
 htmlcov/
 
-# Bunkmeter user data (don't commit personal data)
+# BunkMeter user data (don't commit personal data)
 data.json
 custom_timetable.json
 attendance_report_*.txt

@@ -1,4 +1,4 @@
-# Bunkmeter
+# BunkMeter
 
 **Know exactly how many classes you can safely skip while staying above the attendance thresholds.**
 
@@ -7,8 +7,8 @@
 ## Install & Run
 
 ```bash
-git clone https://github.com/siddhesh17b/Bunkmeter.git
-cd Bunkmeter
+git clone https://github.com/siddhesh17b/BunkMeter.git
+cd BunkMeter
 pip install tkcalendar
 python app.py
 ```
@@ -107,7 +107,7 @@ MONDAY,02:00-04:00,CN Lab (B1&B3) / DAA Lab (B2&B4)
 | Problem | Fix |
 |---------|-----|
 | Won't start | `pip install tkcalendar` |
-| ModuleNotFoundError | Run from inside the Bunkmeter folder |
+| ModuleNotFoundError | Run from inside the BunkMeter folder |
 | Wrong attendance | Check semester dates in Setup tab |
 | Subject missing | Import a timetable with your subjects |
 | Need fresh start | Setup Tab → Reset Data |

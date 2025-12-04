@@ -1,4 +1,4 @@
-# Complete Guide - Bunkmeter
+# Complete Guide - BunkMeter
 
 A step-by-step walkthrough of every feature in the app.
 
@@ -381,7 +381,7 @@ Delete both files and restart the app for fresh install.
 | Problem | Solution |
 |---------|----------|
 | App won't start | Run `pip install tkcalendar` |
-| ModuleNotFoundError | Run from inside Bunkmeter folder |
+| ModuleNotFoundError | Run from inside BunkMeter folder |
 | Wrong attendance % | Check semester dates in Setup tab |
 | Subject missing | Import timetable with your subjects |
 | "0 classes" everywhere | Semester hasn't started yet |

@@ -247,14 +247,27 @@ class SummaryTab:
         tips_frame = tk.Frame(action_frame, bg="#f8f9fa")
         tips_frame.pack(side=tk.LEFT, fill=tk.X, expand=True)
         
+        # Override feature highlight box
+        override_hint_frame = tk.Frame(tips_frame, bg="#e3f2fd", padx=10, pady=8)
+        override_hint_frame.pack(anchor=tk.W, pady=(0, 8), fill=tk.X)
+        
         tk.Label(
-            tips_frame,
-            text="💡 Double-click any row to manually override attendance data",
-            font=("Segoe UI", 10),
-            foreground="#6c757d",
-            bg="#f8f9fa",
+            override_hint_frame,
+            text="✏️ MANUAL OVERRIDE: Double-click any subject row to manually set attended/total classes",
+            font=("Segoe UI", 10, "bold"),
+            foreground="#1565c0",
+            bg="#e3f2fd",
             anchor=tk.W
-        ).pack(anchor=tk.W, pady=2)
+        ).pack(anchor=tk.W)
+        
+        tk.Label(
+            override_hint_frame,
+            text="      Use this when classes were cancelled, rescheduled, or you need to correct attendance data",
+            font=("Segoe UI", 9),
+            foreground="#1976d2",
+            bg="#e3f2fd",
+            anchor=tk.W
+        ).pack(anchor=tk.W)
         
         tk.Label(
             tips_frame,
@@ -340,6 +353,27 @@ class SummaryTab:
             fg="#6c757d",
             justify=tk.CENTER
         ).pack(pady=20)
+        
+        # Override hint in placeholder
+        hint_frame = tk.Frame(self.details_panel, bg="#fff3cd", padx=8, pady=6)
+        hint_frame.pack(pady=15, padx=10, fill=tk.X)
+        
+        tk.Label(
+            hint_frame,
+            text="💡 Tip",
+            font=("Segoe UI", 9, "bold"),
+            bg="#fff3cd",
+            fg="#856404"
+        ).pack(anchor=tk.W)
+        
+        tk.Label(
+            hint_frame,
+            text="Double-click any row\nto override attendance",
+            font=("Segoe UI", 9),
+            bg="#fff3cd",
+            fg="#856404",
+            justify=tk.LEFT
+        ).pack(anchor=tk.W)
     
     def on_row_select(self, event):
         """Handle single-click on row to show details panel"""
