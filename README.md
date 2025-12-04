@@ -1,6 +1,6 @@
 # MyAttendance
 
-**Know exactly how many classes you can skip while staying above 75% attendance.**
+**Know exactly how many classes you can skip while staying above the attendance thresholds.**
 
 ---
 
@@ -19,7 +19,11 @@ First run shows a setup wizard. Pick your batch, set semester dates, done.
 
 ## What it is
 
-MyAttendance is a compact, offline desktop app for students to track class attendance and instantly calculate how many classes can be missed while keeping attendance at or above 75%.
+MyAttendance is a compact, offline desktop app for students to track class attendance and instantly calculate how many classes can be missed while staying safe.
+
+**Dual Threshold System:**
+- **60% minimum per subject** - Each subject must stay above 60%
+- **75% overall attendance** - Your average across all subjects must stay above 75%
 
 It focuses on accuracy (day-by-day counting), minimal input (present-by-default), and practical controls (holiday handling, batch-aware timetables, quick full-day marking).
 
@@ -40,7 +44,8 @@ It focuses on accuracy (day-by-day counting), minimal input (present-by-default)
 
 | Feature | Description |
 |---------|-------------|
-| **75% Threshold** | Calculates safe skips to stay above minimum |
+| **60% Per-Subject** | Each subject tracked against 60% minimum |
+| **75% Overall** | Average attendance must stay above 75% |
 | **Accurate Counting** | Counts actual class occurrences (not estimates) |
 | **Holiday Aware** | Holidays don't count against attendance |
 | **Present by Default** | Only tracks absences - less clicking |

@@ -27,6 +27,17 @@ class SetupTab:
         self.end_date_cal = None
         self.holidays_tree = None
         self.skipped_tree = None
+        # Setup mode tracking - forces user to select batch & dates after import
+        self.setup_mode = False
+        self.setup_step = 0  # 0=batch, 1=dates, 2=complete
+        # Frame references for enable/disable
+        self.left_column = None
+        self.dates_frame = None
+        self.holidays_frame = None
+        self.timetable_frame = None
+        self.skipped_frame = None
+        self.reset_frame = None
+        self.setup_banner = None
     
     def create(self):
         """Create setup tab"""
@@ -68,8 +79,8 @@ class SetupTab:
         app_data = get_app_data()
         
         # Create 2-column layout for better space usage
-        left_column = ttk.Frame(scrollable_frame)
-        left_column.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E), padx=5, pady=5)
+        self.left_column = ttk.Frame(scrollable_frame)
+        self.left_column.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E), padx=5, pady=5)
         
         right_column = ttk.Frame(scrollable_frame)
         right_column.grid(row=0, column=1, sticky=(tk.N, tk.W, tk.E), padx=5, pady=5)
@@ -78,7 +89,7 @@ class SetupTab:
         scrollable_frame.columnconfigure(1, weight=1)
         
         # Batch Selection (LEFT)
-        self.batch_frame = tk.LabelFrame(left_column, text="Batch Selection", 
+        self.batch_frame = tk.LabelFrame(self.left_column, text="Batch Selection", 
                                     font=("Arial", 11, "bold"), padx=10, pady=10)
         self.batch_frame.pack(fill=tk.X, padx=10, pady=10)
         
@@ -92,13 +103,17 @@ class SetupTab:
         
         ttk.Button(self.batch_frame, text="Update Batch", command=self.on_batch_update).pack(pady=5)
         
+        # Setup mode banner (hidden by default)
+        self.setup_banner = tk.Frame(self.left_column, bg="#fff3cd")
+        # Will be shown/hidden as needed
+        
         # Semester Dates (LEFT)
-        dates_frame = tk.LabelFrame(left_column, text="Semester Dates", 
+        self.dates_frame = tk.LabelFrame(self.left_column, text="Semester Dates", 
                                     font=("Arial", 11, "bold"), padx=10, pady=10)
-        dates_frame.pack(fill=tk.X, padx=10, pady=10)
+        self.dates_frame.pack(fill=tk.X, padx=10, pady=10)
         
         # Start Date Calendar
-        tk.Label(dates_frame, text="Start Date:", font=("Arial", 10, "bold")).grid(
+        tk.Label(self.dates_frame, text="Start Date:", font=("Arial", 10, "bold")).grid(
             row=0, column=0, sticky=tk.W, pady=5, padx=5)
         
         start_date = datetime.now()
@@ -109,7 +124,7 @@ class SetupTab:
                 pass
         
         self.start_date_cal = Calendar(
-            dates_frame,
+            self.dates_frame,
             selectmode='day',
             year=start_date.year,
             month=start_date.month,
@@ -119,7 +134,7 @@ class SetupTab:
         self.start_date_cal.grid(row=1, column=0, padx=5, pady=5)
         
         # End Date Calendar
-        tk.Label(dates_frame, text="End Date:", font=("Arial", 10, "bold")).grid(
+        tk.Label(self.dates_frame, text="End Date:", font=("Arial", 10, "bold")).grid(
             row=0, column=1, sticky=tk.W, pady=5, padx=5)
         
         end_date = datetime.now()
@@ -130,7 +145,7 @@ class SetupTab:
                 pass
         
         self.end_date_cal = Calendar(
-            dates_frame,
+            self.dates_frame,
             selectmode='day',
             year=end_date.year,
             month=end_date.month,
@@ -139,15 +154,15 @@ class SetupTab:
         )
         self.end_date_cal.grid(row=1, column=1, padx=5, pady=5)
         
-        ttk.Button(dates_frame, text="Save Dates", command=self.on_dates_update).grid(
+        ttk.Button(self.dates_frame, text="Save Dates", command=self.on_dates_update).grid(
             row=2, column=0, columnspan=2, pady=10)
         
         # Holidays (LEFT)
-        holidays_frame = tk.LabelFrame(left_column, text="Holiday Periods", 
+        self.holidays_frame = tk.LabelFrame(self.left_column, text="Holiday Periods", 
                                       font=("Arial", 11, "bold"), padx=10, pady=10)
-        holidays_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        self.holidays_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        self.holidays_tree = ttk.Treeview(holidays_frame, columns=("Name", "Start", "End"), 
+        self.holidays_tree = ttk.Treeview(self.holidays_frame, columns=("Name", "Start", "End"), 
                                          show="headings", height=6)
         self.holidays_tree.heading("Name", text="Holiday Name")
         self.holidays_tree.heading("Start", text="Start Date")
@@ -159,25 +174,25 @@ class SetupTab:
             self.holidays_tree.yview_scroll(int(-1*(event.delta/120)), "units")
         self.holidays_tree.bind("<MouseWheel>", _on_holidays_mousewheel)
         
-        btn_frame = tk.Frame(holidays_frame)
+        btn_frame = tk.Frame(self.holidays_frame)
         btn_frame.pack(fill=tk.X, pady=5)
         ttk.Button(btn_frame, text="➕ Add Holiday Period", command=self.add_holiday).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="➖ Remove Holiday", command=self.remove_holiday).pack(side=tk.LEFT, padx=5)
         
         # Timetable Management Section (RIGHT)
-        timetable_frame = tk.LabelFrame(right_column, text="Custom Timetable Management", 
+        self.timetable_frame = tk.LabelFrame(right_column, text="Custom Timetable Management", 
                                         font=("Arial", 11, "bold"), padx=10, pady=10)
-        timetable_frame.pack(fill=tk.X, padx=10, pady=10)
+        self.timetable_frame.pack(fill=tk.X, padx=10, pady=10)
         
         tk.Label(
-            timetable_frame, 
+            self.timetable_frame, 
             text="📚 Upload your own timetable CSV or export the current one as a template.\nSee COMPLETE_GUIDE.md for format details.",
             font=("Arial", 9),
             foreground="#007bff",
             justify=tk.LEFT
         ).pack(pady=5)
         
-        timetable_btn_frame = tk.Frame(timetable_frame)
+        timetable_btn_frame = tk.Frame(self.timetable_frame)
         timetable_btn_frame.pack(fill=tk.X, pady=5)
         
         ttk.Button(
@@ -199,19 +214,19 @@ class SetupTab:
         ).pack(side=tk.LEFT, padx=5)
         
         # Skipped Days (RIGHT)
-        skipped_frame = tk.LabelFrame(right_column, text="Completely Skipped Days (e.g., Sick Leave)", 
+        self.skipped_frame = tk.LabelFrame(right_column, text="Completely Skipped Days (e.g., Sick Leave)", 
                                       font=("Arial", 11, "bold"), padx=10, pady=10)
-        skipped_frame.pack(fill=tk.X, padx=10, pady=10)
+        self.skipped_frame.pack(fill=tk.X, padx=10, pady=10)
         
         tk.Label(
-            skipped_frame, 
+            self.skipped_frame, 
             text="📅 Days when you were completely absent (all classes marked absent)",
             font=("Arial", 9),
             foreground="#dc3545",
             justify=tk.LEFT
         ).pack(pady=5)
         
-        self.skipped_tree = ttk.Treeview(skipped_frame, columns=("Name", "Start", "End"), 
+        self.skipped_tree = ttk.Treeview(self.skipped_frame, columns=("Name", "Start", "End"), 
                                          show="headings", height=4)
         self.skipped_tree.heading("Name", text="Reason")
         self.skipped_tree.heading("Start", text="Start Date")
@@ -223,18 +238,18 @@ class SetupTab:
             self.skipped_tree.yview_scroll(int(-1*(event.delta/120)), "units")
         self.skipped_tree.bind("<MouseWheel>", _on_skipped_mousewheel)
         
-        skipped_btn_frame = tk.Frame(skipped_frame)
+        skipped_btn_frame = tk.Frame(self.skipped_frame)
         skipped_btn_frame.pack(fill=tk.X, pady=5)
         ttk.Button(skipped_btn_frame, text="➕ Add Skipped Period", command=self.add_skipped_days).pack(side=tk.LEFT, padx=5)
         ttk.Button(skipped_btn_frame, text="➖ Remove Skipped Period", command=self.remove_skipped_days).pack(side=tk.LEFT, padx=5)
         
         # Reset Data Section (RIGHT)
-        reset_frame = tk.LabelFrame(right_column, text="Reset Data", 
+        self.reset_frame = tk.LabelFrame(right_column, text="Reset Data", 
                                     font=("Arial", 11, "bold"), padx=10, pady=10)
-        reset_frame.pack(fill=tk.X, padx=10, pady=10)
+        self.reset_frame.pack(fill=tk.X, padx=10, pady=10)
         
         tk.Label(
-            reset_frame, 
+            self.reset_frame, 
             text="⚠️ Warning: This will clear all holidays and absent dates.\nSemester dates and batch will be preserved.",
             font=("Arial", 9),
             foreground="#dc3545",
@@ -242,7 +257,7 @@ class SetupTab:
         ).pack(pady=5)
         
         ttk.Button(
-            reset_frame, 
+            self.reset_frame, 
             text="🔄 Reset All Data", 
             command=self.reset_data
         ).pack(pady=5)
@@ -395,7 +410,15 @@ class SetupTab:
             
             save_data()
             self.refresh_all_tabs()
-            messagebox.showinfo("Success", "Batch updated successfully!")
+            
+            # Check if setup is complete (batch + dates set)
+            if self.setup_mode:
+                if self.check_setup_complete():
+                    messagebox.showinfo("Setup Complete", "Batch and dates configured! All features are now available.")
+                else:
+                    messagebox.showinfo("Next Step", "Batch updated! Now please set your semester start and end dates.")
+            else:
+                messagebox.showinfo("Success", "Batch updated successfully!")
     
     def on_dates_update(self):
         app_data = get_app_data()
@@ -411,7 +434,15 @@ class SetupTab:
         app_data["semester_end"] = end_date
         save_data()
         self.refresh_all_tabs()
-        messagebox.showinfo("Success", "Semester dates updated!")
+        
+        # Check if setup is complete (batch + dates set)
+        if self.setup_mode:
+            if self.check_setup_complete():
+                messagebox.showinfo("Setup Complete", "Batch and dates configured! All features are now available.")
+            else:
+                messagebox.showinfo("Next Step", "Dates saved! Now please select your batch and click 'Update Batch'.")
+        else:
+            messagebox.showinfo("Success", "Semester dates updated!")
     
     def add_holiday(self):
         """Add a holiday period"""
@@ -752,8 +783,79 @@ class SetupTab:
         
         messagebox.showinfo("Success", "All data has been reset successfully!")
     
+    def set_frame_state(self, frame, state):
+        """Enable or disable all children in a frame recursively"""
+        for child in frame.winfo_children():
+            try:
+                child.configure(state=state)
+            except tk.TclError:
+                pass  # Widget doesn't support state
+            # Recursively handle nested frames
+            if isinstance(child, (tk.Frame, ttk.Frame, tk.LabelFrame)):
+                self.set_frame_state(child, state)
+    
+    def enter_setup_mode(self):
+        """Enter setup mode after timetable import - disable non-essential sections"""
+        self.setup_mode = True
+        self.setup_step = 0  # Start with batch selection
+        
+        # Show setup banner
+        self.setup_banner.pack(fill=tk.X, padx=10, pady=(5, 0), before=self.dates_frame)
+        for widget in self.setup_banner.winfo_children():
+            widget.destroy()
+        
+        tk.Label(
+            self.setup_banner,
+            text="⚠️ Setup Required: Select your batch, then set semester dates to continue",
+            font=("Arial", 10, "bold"),
+            bg="#fff3cd",
+            fg="#856404"
+        ).pack(pady=8, padx=10)
+        
+        # Disable all sections except batch and dates
+        self.set_frame_state(self.holidays_frame, "disabled")
+        self.set_frame_state(self.skipped_frame, "disabled")
+        self.set_frame_state(self.reset_frame, "disabled")
+        # Timetable frame stays enabled for export/reset
+        
+        # Update visual appearance
+        self.holidays_frame.configure(fg="gray")
+        self.skipped_frame.configure(fg="gray")
+        self.reset_frame.configure(fg="gray")
+    
+    def exit_setup_mode(self):
+        """Exit setup mode - enable all sections"""
+        self.setup_mode = False
+        self.setup_step = 2
+        
+        # Hide setup banner
+        self.setup_banner.pack_forget()
+        
+        # Enable all sections
+        self.set_frame_state(self.holidays_frame, "normal")
+        self.set_frame_state(self.skipped_frame, "normal")
+        self.set_frame_state(self.reset_frame, "normal")
+        
+        # Restore visual appearance
+        self.holidays_frame.configure(fg="black")
+        self.skipped_frame.configure(fg="black")
+        self.reset_frame.configure(fg="black")
+    
+    def check_setup_complete(self):
+        """Check if batch and dates are set, if so exit setup mode"""
+        app_data = get_app_data()
+        batch = app_data.get("batch", "")
+        start = app_data.get("semester_start", "")
+        end = app_data.get("semester_end", "")
+        subjects = app_data.get("subjects", [])
+        
+        if batch and start and end and len(subjects) > 0:
+            self.exit_setup_mode()
+            return True
+        return False
+    
     def import_timetable(self):
-        """Import custom timetable from CSV and reset all data"""
+        """Import custom timetable from CSV and enter setup mode"""
         # Confirm reset
         confirm = messagebox.askyesno(
             "Confirm Import",
@@ -775,28 +877,20 @@ class SetupTab:
             app_data = get_app_data()
             app_data["holidays"] = []
             app_data["skipped_days"] = []
-            
-            # Reinitialize subjects based on new timetable with fresh data
-            batch = app_data.get("batch", "B1/B3")
-            subject_counts = parse_timetable_csv(batch)
-            
-            app_data["subjects"] = []
-            for subject_name, weekly_count in subject_counts.items():
-                app_data["subjects"].append({
-                    "name": subject_name,
-                    "weekly_count": weekly_count,
-                    "total_override": None,
-                    "attendance_override": None,
-                    "absent_dates": []
-                })
+            app_data["batch"] = ""  # Clear batch to force re-selection
+            app_data["subjects"] = []  # Clear subjects until batch is selected
             
             save_data()
             
             # Update batch selection UI with new timetable
             self.update_batch_options()
+            self.batch_var.set("")  # Clear batch selection
             
+            # Enter setup mode
+            self.enter_setup_mode()
+            
+            self.refresh()
             self.refresh_all_tabs()
-            messagebox.showinfo("Success", "Timetable imported and all data reset!\nBatch options have been updated.\nPlease select your batch and click 'Update Batch'.")
     
     def export_timetable(self):
         """Export current timetable to CSV template"""

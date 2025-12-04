@@ -167,9 +167,9 @@ Your attendance headquarters.
 | Card | Shows |
 |------|-------|
 | 📚 Total Subjects | Number of subjects |
-| 📊 Average | Overall attendance % |
-| ✅ Excellent/Safe | Subjects at 75%+ |
-| ⚠️ At Risk | Subjects below 75% |
+| 📊 Average | Overall attendance % (75% threshold) |
+| ✅ Excellent/Safe | Subjects at 60%+ |
+| ⚠️ At Risk | Subjects below 60% |
 
 ### Subject Table
 | Column | Meaning |
@@ -180,7 +180,7 @@ Your attendance headquarters.
 | Remaining | Future classes till semester end |
 | Percentage | Your attendance % |
 | Progress | Visual bar with 🟢🟡🔴 |
-| Status | 🟢 Excellent (≥85%) / 🟡 Safe (75-84%) / 🔴 At Risk (<75%) |
+| Status | 🟢 Excellent (≥75%) / 🟡 Safe (60-74%) / 🔴 At Risk (<60%) |
 | Can Skip | How many more you can miss |
 | Action | "✏️ Edit" or "📝 Manual" if override active |
 
@@ -194,7 +194,7 @@ Your attendance headquarters.
 - Statistics (attended/total/remaining/weekly count)
 - Status indicator (🟢🟡🔴)
 - **Absent Dates List** - All dates you were absent (scrollable)
-- **Recovery Calculation** - If at risk, shows "Need X more classes to reach 75%"
+- **Recovery Calculation** - If at risk, shows "Need X more classes to reach 60%"
 - **"✏️ Edit Attendance"** button
 
 ### Manual Override
@@ -271,30 +271,34 @@ Batch names are auto-detected from parentheses in your CSV.
 
 ---
 
-## The 75% Formula
+## The Attendance Thresholds
 
-### Safe to Skip Calculation
+### Dual Threshold System
+- **60% minimum per subject** - Each subject must stay above 60%
+- **75% overall attendance** - Your average across all subjects must stay above 75%
+
+### Safe to Skip Calculation (60% threshold for subjects)
 ```
-Safe to Skip = floor((Attended - 0.75 × Total) / 0.25)
+Safe to Skip = floor((Attended - 0.60 × Total) / 0.40)
 ```
 
 ### Example
 - Attended: 30 classes
 - Total: 36 classes
-- Calculation: (30 - 27) / 0.25 = 12
-- **Result: You can skip 12 more classes**
+- Calculation: (30 - 21.6) / 0.40 = 21
+- **Result: You can skip 21 more classes and still be at 60%**
 
-### Recovery Calculation (When Below 75%)
+### Recovery Calculation (When Below 60%)
 ```
-Classes Needed = ceil((0.75 × Total - Attended) / 0.25)
+Classes Needed = ceil((0.60 × Total - Attended) / 0.40)
 ```
 
 ### Example
 - Attended: 20 classes
 - Total: 36 classes
 - Current: 55.6%
-- Calculation: (27 - 20) / 0.25 = 28
-- **Result: Need 28 more classes without absence to reach 75%**
+- Calculation: (21.6 - 20) / 0.40 = 4
+- **Result: Need 4 more classes without absence to reach 60%**
 
 ---
 

@@ -21,13 +21,17 @@ from data_manager import get_app_data, count_subject_classes
 from calculations import (
     calculate_attendance, 
     calculate_safe_skip, 
-    get_attendance_status
+    get_attendance_status,
+    get_subject_status,
+    get_overall_status,
+    SUBJECT_THRESHOLD,
+    OVERALL_THRESHOLD
 )
 
 # Enhanced color scheme
-COLOR_SAFE = "#28a745"        # Green - safe attendance (≥75%)
-COLOR_RISK = "#dc3545"        # Red - at risk (<75%)
-COLOR_WARNING = "#ffc107"     # Yellow - warning (75-80%)
+COLOR_SAFE = "#28a745"        # Green - excellent attendance (≥75% subject / ≥85% overall)
+COLOR_RISK = "#dc3545"        # Red - at risk (<60% subject / <75% overall)
+COLOR_WARNING = "#ffc107"     # Yellow - safe but needs attention (60-75% subject / 75-85% overall)
 COLOR_INFO = "#007bff"        # Blue - informational
 COLOR_BG_SAFE = "#d4edda"     # Light green background
 COLOR_BG_WARNING = "#fff3cd"  # Light yellow background
@@ -49,6 +53,7 @@ class SummaryTab:
         self.semester_progress_frame = None
         self.details_panel = None
         self.subject_data_cache = {}  # Cache for quick lookup
+        self.overall_warning_frame = None  # Warning for overall attendance <75%
     
     def create(self):
         """Create the enhanced summary dashboard tab"""
@@ -296,14 +301,15 @@ class SummaryTab:
             self.summary_tree.move(item, '', index)
     
     def create_progress_bar(self, percentage):
-        """Create visual progress bar representation"""
+        """Create visual progress bar representation
+        Uses 60% threshold for per-subject status"""
         bar_length = 10
         filled = int((percentage / 100) * bar_length)
         
-        if percentage >= 85:
+        if percentage >= 75:
             symbol = "█"
             color = "🟢"
-        elif percentage >= 75:
+        elif percentage >= 60:
             symbol = "█"
             color = "🟡"
         else:
@@ -465,25 +471,25 @@ class SummaryTab:
                 fg="#ff9800"
             ).pack(pady=(5, 2))
         
-        # Status indicator
-        if attendance_pct >= 85:
+        # Status indicator (60% threshold for subjects)
+        if attendance_pct >= 75:
             status_text = "🟢 Excellent"
             status_color = COLOR_SAFE
-        elif attendance_pct >= 75:
+        elif attendance_pct >= 60:
             status_text = "🟡 Safe"
             status_color = COLOR_WARNING
         else:
             status_text = "🔴 At Risk"
             status_color = COLOR_RISK
-            # Show classes needed to reach 75%
+            # Show classes needed to reach 60%
             if total > 0:
-                # Formula: (present + x) / (total + x) >= 0.75
-                # Solving: present + x >= 0.75 * (total + x)
-                # x >= (0.75*total - present) / 0.25
-                classes_needed = max(0, int((0.75 * total - present) / 0.25) + 1)
+                # Formula: (present + x) / (total + x) >= 0.60
+                # Solving: present + x >= 0.60 * (total + x)
+                # x >= (0.60*total - present) / 0.40
+                classes_needed = max(0, int((0.60 * total - present) / 0.40) + 1)
                 tk.Label(
                     self.details_panel,
-                    text=f"📈 Need {classes_needed} more classes\nwithout absence to reach 75%",
+                    text=f"📈 Need {classes_needed} more classes\nwithout absence to reach 60%",
                     font=("Segoe UI", 9),
                     bg="#f8f9fa",
                     fg=COLOR_RISK,
@@ -693,6 +699,11 @@ class SummaryTab:
         for widget in self.stats_frame.winfo_children():
             widget.destroy()
         
+        # Clear overall warning frame if exists
+        if self.overall_warning_frame:
+            self.overall_warning_frame.destroy()
+            self.overall_warning_frame = None
+        
         if not app_data.get("semester_start"):
             return
         
@@ -764,12 +775,12 @@ class SummaryTab:
             # Create progress bar
             progress_bar = self.create_progress_bar(attendance_pct)
             
-            # Determine status icon and category
-            if attendance_pct >= 85:
+            # Determine status icon and category (60% threshold for subjects)
+            if attendance_pct >= 75:
                 status_icon = "🟢 Excellent"
                 tag = "safe"
                 safe_count += 1
-            elif attendance_pct >= 75:
+            elif attendance_pct >= 60:
                 status_icon = "🟡 Safe"
                 tag = "warning"
                 warning_count += 1
@@ -812,7 +823,7 @@ class SummaryTab:
         num_subjects = len(subjects_list)
         avg_attendance = total_attendance_pct / num_subjects if num_subjects > 0 else 0
         
-        # Determine average color
+        # Determine average color (75% threshold for overall)
         if avg_attendance >= 85:
             avg_color = COLOR_SAFE
         elif avg_attendance >= 75:
@@ -829,21 +840,33 @@ class SummaryTab:
         
         for icon, label, value, text_color, bg_color in stats_info:
             self.create_stat_card(icon, label, value, text_color, bg_color)
+        
+        # Add overall attendance warning if below 75%
+        if avg_attendance < 75:
+            self.overall_warning_frame = tk.Frame(self.stats_frame.master, bg="#f8d7da")
+            self.overall_warning_frame.pack(fill=tk.X, padx=10, pady=(5, 0))
+            tk.Label(
+                self.overall_warning_frame,
+                text=f"⚠️ Overall attendance ({avg_attendance:.1f}%) is below 75% minimum!",
+                font=("Segoe UI", 10, "bold"),
+                bg="#f8d7da",
+                fg="#721c24"
+            ).pack(pady=5)
     
     def get_bg_color(self, percentage):
-        """Get background color based on percentage"""
-        if percentage >= 85:
+        """Get background color based on percentage (60% threshold for subjects)"""
+        if percentage >= 75:
             return COLOR_BG_SAFE
-        elif percentage >= 75:
+        elif percentage >= 60:
             return COLOR_BG_WARNING
         else:
             return COLOR_BG_RISK
     
     def create_stat_card(self, icon, label, value, text_color, bg_color):
-        """Create enhanced stat card with icon and styling"""
+        """Create enhanced stat card with icon and styling - compact version"""
         # Card container with shadow effect
         card_container = tk.Frame(self.stats_frame, bg="#dee2e6", bd=1, relief=tk.SOLID)
-        card_container.pack(side=tk.LEFT, expand=True, padx=8, pady=8)
+        card_container.pack(side=tk.LEFT, expand=True, padx=6, pady=4)
         
         # Inner card
         card = tk.Frame(card_container, bg=bg_color)
@@ -853,15 +876,15 @@ class SummaryTab:
         tk.Label(
             card,
             text=icon,
-            font=("Segoe UI", 28),
+            font=("Segoe UI", 20),
             bg=bg_color
-        ).pack(pady=(15, 5))
+        ).pack(pady=(8, 2))
         
         # Value
         tk.Label(
             card,
             text=str(value),
-            font=("Segoe UI", 26, "bold"),
+            font=("Segoe UI", 20, "bold"),
             fg=text_color,
             bg=bg_color
         ).pack()
@@ -870,10 +893,10 @@ class SummaryTab:
         tk.Label(
             card,
             text=label,
-            font=("Segoe UI", 11),
+            font=("Segoe UI", 9),
             fg="#495057",
             bg=bg_color
-        ).pack(pady=(5, 15))
+        ).pack(pady=(2, 8))
     
     def export_report(self):
         """Export attendance report to text file"""
