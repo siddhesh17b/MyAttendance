@@ -107,14 +107,26 @@ class SetupTab:
         self.setup_banner = tk.Frame(self.left_column, bg="#fff3cd")
         # Will be shown/hidden as needed
         
-        # Semester Dates (LEFT)
-        self.dates_frame = tk.LabelFrame(self.left_column, text="Semester Dates", 
+        # Semester Dates (LEFT) - Improved layout
+        self.dates_frame = tk.LabelFrame(self.left_column, text="📅 Semester Dates", 
                                     font=("Arial", 11, "bold"), padx=10, pady=10)
         self.dates_frame.pack(fill=tk.X, padx=10, pady=10)
         
+        # Info text
+        tk.Label(
+            self.dates_frame,
+            text="Set your semester start and end dates for accurate attendance calculation.",
+            font=("Segoe UI", 9),
+            foreground="#666666"
+        ).grid(row=0, column=0, columnspan=2, sticky=tk.W, pady=(0, 10))
+        
+        # Calendars container
+        calendars_container = ttk.Frame(self.dates_frame)
+        calendars_container.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E))
+        
         # Start Date Calendar
-        tk.Label(self.dates_frame, text="Start Date:", font=("Arial", 10, "bold")).grid(
-            row=0, column=0, sticky=tk.W, pady=5, padx=5)
+        start_frame = ttk.LabelFrame(calendars_container, text="Start Date", padding=5)
+        start_frame.pack(side=tk.LEFT, padx=(0, 10), fill=tk.BOTH, expand=True)
         
         start_date = datetime.now()
         if app_data.get("semester_start"):
@@ -124,18 +136,18 @@ class SetupTab:
                 pass
         
         self.start_date_cal = Calendar(
-            self.dates_frame,
+            start_frame,
             selectmode='day',
             year=start_date.year,
             month=start_date.month,
             day=start_date.day,
             date_pattern='yyyy-mm-dd'
         )
-        self.start_date_cal.grid(row=1, column=0, padx=5, pady=5)
+        self.start_date_cal.pack(pady=5)
         
         # End Date Calendar
-        tk.Label(self.dates_frame, text="End Date:", font=("Arial", 10, "bold")).grid(
-            row=0, column=1, sticky=tk.W, pady=5, padx=5)
+        end_frame = ttk.LabelFrame(calendars_container, text="End Date", padding=5)
+        end_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         end_date = datetime.now()
         if app_data.get("semester_end"):
@@ -145,16 +157,17 @@ class SetupTab:
                 pass
         
         self.end_date_cal = Calendar(
-            self.dates_frame,
+            end_frame,
             selectmode='day',
             year=end_date.year,
             month=end_date.month,
             day=end_date.day,
             date_pattern='yyyy-mm-dd'
         )
-        self.end_date_cal.grid(row=1, column=1, padx=5, pady=5)
+        self.end_date_cal.pack(pady=5)
         
-        ttk.Button(self.dates_frame, text="Save Dates", command=self.on_dates_update).grid(
+        # Save button
+        ttk.Button(self.dates_frame, text="✓ Save Semester Dates", command=self.on_dates_update).grid(
             row=2, column=0, columnspan=2, pady=10)
         
         # Holidays (LEFT)
@@ -190,7 +203,8 @@ class SetupTab:
         btn_frame = tk.Frame(self.holidays_frame)
         btn_frame.pack(fill=tk.X, pady=5)
         ttk.Button(btn_frame, text="➕ Add Holiday Period", command=self.add_holiday).pack(side=tk.LEFT, padx=5)
-        ttk.Button(btn_frame, text="➖ Remove Holiday", command=self.remove_holiday).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="➖ Remove Selected", command=self.remove_holiday).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="🗑️ Remove All", command=self.remove_all_holidays).pack(side=tk.LEFT, padx=5)
         
         # Timetable Management Section (RIGHT)
         self.timetable_frame = tk.LabelFrame(right_column, text="Custom Timetable Management", 
@@ -267,7 +281,8 @@ class SetupTab:
         skipped_btn_frame = tk.Frame(self.skipped_frame)
         skipped_btn_frame.pack(fill=tk.X, pady=5)
         ttk.Button(skipped_btn_frame, text="➕ Add Skipped Period", command=self.add_skipped_days).pack(side=tk.LEFT, padx=5)
-        ttk.Button(skipped_btn_frame, text="➖ Remove Skipped Period", command=self.remove_skipped_days).pack(side=tk.LEFT, padx=5)
+        ttk.Button(skipped_btn_frame, text="➖ Remove Selected", command=self.remove_skipped_days).pack(side=tk.LEFT, padx=5)
+        ttk.Button(skipped_btn_frame, text="🗑️ Remove All", command=self.remove_all_skipped_days).pack(side=tk.LEFT, padx=5)
         
         # Reset Data Section (RIGHT)
         self.reset_frame = tk.LabelFrame(right_column, text="Reset Data", 
@@ -616,6 +631,28 @@ class SetupTab:
         self.refresh()
         self.refresh_all_tabs()
     
+    def remove_all_holidays(self):
+        """Remove all holidays after confirmation"""
+        app_data = get_app_data()
+        
+        if not app_data.get("holidays"):
+            messagebox.showinfo("Info", "No holidays to remove")
+            return
+        
+        count = len(app_data["holidays"])
+        confirm = messagebox.askyesno(
+            "Confirm Remove All",
+            f"Are you sure you want to remove all {count} holiday(s)?\n\nThis action cannot be undone.",
+            icon="warning"
+        )
+        
+        if confirm:
+            app_data["holidays"] = []
+            save_data()
+            self.refresh()
+            self.refresh_all_tabs()
+            messagebox.showinfo("Success", f"Removed all {count} holiday(s)")
+    
     def add_skipped_days(self):
         """Add a skipped days period with improved dialog layout"""
         app_data = get_app_data()
@@ -835,17 +872,80 @@ class SetupTab:
         day_name = date_obj.strftime("%A").upper()
         subjects = get_subjects_for_day(day_name, batch)
         
-        # For each subject occurrence (handles multi-occurrence subjects)
+        # Count occurrences of each subject on this day
+        subject_counts = {}
         for subject in subjects:
+            subject_counts[subject] = subject_counts.get(subject, 0) + 1
+        
+        # Remove ALL occurrences for each subject (matches how they were added)
+        for subject, count in subject_counts.items():
             subject_data = next((s for s in app_data["subjects"] if s["name"] == subject), None)
-            # Remove ONE occurrence per subject in the list (matches how they were added)
-            if subject_data and date_str in subject_data.get("absent_dates", []):
-                subject_data["absent_dates"].remove(date_str)
+            if subject_data:
+                # Remove 'count' occurrences of this date from absent_dates
+                for _ in range(count):
+                    if date_str in subject_data.get("absent_dates", []):
+                        subject_data["absent_dates"].remove(date_str)
         
         del app_data["skipped_days"][index]
         save_data()
         self.refresh()
         self.refresh_all_tabs()
+    
+    def remove_all_skipped_days(self):
+        """Remove all skipped days and their absence marks after confirmation"""
+        app_data = get_app_data()
+        
+        if not app_data.get("skipped_days"):
+            messagebox.showinfo("Info", "No skipped days to remove")
+            return
+        
+        count = len(app_data["skipped_days"])
+        confirm = messagebox.askyesno(
+            "Confirm Remove All",
+            f"Are you sure you want to remove all {count} skipped day(s)?\n\n"
+            "This will also restore the attendance marks for those days.\n\n"
+            "This action cannot be undone.",
+            icon="warning"
+        )
+        
+        if not confirm:
+            return
+        
+        # Remove absence marks for all skipped days
+        from datetime import datetime
+        batch = app_data.get("batch", "B1/B3")
+        
+        for skipped in app_data.get("skipped_days", []):
+            date_str = skipped.get("date", skipped.get("start", ""))
+            if not date_str:
+                continue
+            
+            try:
+                date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                day_name = date_obj.strftime("%A").upper()
+                subjects = get_subjects_for_day(day_name, batch)
+                
+                # Count occurrences of each subject on this day
+                subject_counts = {}
+                for subject in subjects:
+                    subject_counts[subject] = subject_counts.get(subject, 0) + 1
+                
+                # Remove ALL occurrences for each subject
+                for subject, count in subject_counts.items():
+                    subject_data = next((s for s in app_data["subjects"] if s["name"] == subject), None)
+                    if subject_data:
+                        for _ in range(count):
+                            if date_str in subject_data.get("absent_dates", []):
+                                subject_data["absent_dates"].remove(date_str)
+            except (ValueError, KeyError):
+                continue
+        
+        # Clear all skipped days
+        app_data["skipped_days"] = []
+        save_data()
+        self.refresh()
+        self.refresh_all_tabs()
+        messagebox.showinfo("Success", f"Removed all {count} skipped day(s) and restored attendance marks")
     
     def reset_data(self):
         """Reset all user data (holidays and absent dates)"""

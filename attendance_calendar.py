@@ -459,8 +459,10 @@ class AttendanceCalendar:
         subjects_frame.bind("<MouseWheel>", _on_mousewheel)
         
         # Create checkboxes for each subject (with occurrence tracking for duplicates)
-        # Count occurrences of each subject
+        # Count occurrences of each subject and track absent counts
         subject_occurrence_count = {}
+        subject_absent_count = {}  # Track how many absences already accounted for
+        
         for idx, subject in enumerate(subjects):
             subject_data = next((s for s in app_data["subjects"] if s["name"] == subject), None)
             
@@ -472,9 +474,20 @@ class AttendanceCalendar:
             subject_key = f"{subject}__occurrence_{occurrence}" if subjects.count(subject) > 1 else subject
             
             # Check if currently marked absent
+            # For subjects with multiple occurrences, we need to count how many times
+            # this date appears in absent_dates and match against occurrences
             is_present = True
-            if subject_data and date_str in subject_data.get("absent_dates", []):
-                is_present = False
+            if subject_data:
+                absent_dates = subject_data.get("absent_dates", [])
+                # Count total absences for this date
+                total_absences_for_date = absent_dates.count(date_str)
+                # How many have we already accounted for?
+                already_counted = subject_absent_count.get(subject, 0)
+                
+                # This occurrence is absent if there are more absences than we've counted
+                if already_counted < total_absences_for_date:
+                    is_present = False
+                    subject_absent_count[subject] = already_counted + 1
             
             # Create and store checkbox variable with unique key
             var = tk.BooleanVar(value=is_present)
@@ -510,8 +523,20 @@ class AttendanceCalendar:
         ).pack(fill=tk.X)
     
     def save_attendance(self, date_str):
-        """Save attendance for the selected date"""
+        """Save attendance for the selected date
+        
+        Also syncs with skipped_days list:
+        - If ALL subjects are marked absent → add to skipped_days
+        - If ANY subject is marked present → remove from skipped_days
+        """
         app_data = get_app_data()
+        
+        # Initialize skipped_days if not exists
+        if "skipped_days" not in app_data:
+            app_data["skipped_days"] = []
+        
+        # Track if all subjects will be absent after save
+        all_will_be_absent = True
         
         # Update absent_dates for each subject based on checkbox state
         # Handle subjects with multiple occurrences (e.g., "Physics Lab__occurrence_1")
@@ -528,6 +553,9 @@ class AttendanceCalendar:
             
             is_present = var.get()
             
+            if is_present:
+                all_will_be_absent = False
+            
             if not is_present:
                 # Mark as absent - add to absent_dates (can have multiple entries for same date)
                 subject_data["absent_dates"].append(date_str)
@@ -535,6 +563,31 @@ class AttendanceCalendar:
                 # Mark as present - remove ONE occurrence from absent_dates if exists
                 if date_str in subject_data["absent_dates"]:
                     subject_data["absent_dates"].remove(date_str)
+        
+        # Sync with skipped_days list
+        # Check if this date is already in skipped_days
+        existing_skipped_dates = set(
+            s.get("date", s.get("start", "")) for s in app_data.get("skipped_days", [])
+        )
+        is_already_skipped = date_str in existing_skipped_dates
+        
+        if all_will_be_absent and not is_already_skipped:
+            # All subjects absent - add to skipped_days
+            try:
+                date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                formatted_date = date_obj.strftime("%d %b %Y")
+                app_data["skipped_days"].append({
+                    "reason": f"All absent: {formatted_date}",
+                    "date": date_str
+                })
+            except ValueError:
+                pass
+        elif not all_will_be_absent and is_already_skipped:
+            # Some subjects now present - remove from skipped_days
+            app_data["skipped_days"] = [
+                s for s in app_data["skipped_days"]
+                if s.get("date", s.get("start", "")) != date_str
+            ]
         
         # Save to file
         save_data()
