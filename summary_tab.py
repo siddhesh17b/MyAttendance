@@ -912,7 +912,7 @@ class SummaryTab:
             with open(filename, 'w') as f:
                 # Header
                 f.write("=" * 70 + "\n")
-                f.write("MYATTENDANCE - ATTENDANCE REPORT\n")
+                f.write("BUNKMETER - ATTENDANCE REPORT\n")
                 f.write("=" * 70 + "\n\n")
                 f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
                 f.write(f"Batch: {app_data.get('batch', 'N/A')}\n")

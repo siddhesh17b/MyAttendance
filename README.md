@@ -1,14 +1,14 @@
-# MyAttendance
+# Bunkmeter
 
-**Know exactly how many classes you can skip while staying above the attendance thresholds.**
+**Know exactly how many classes you can safely skip while staying above the attendance thresholds.**
 
 ---
 
 ## Install & Run
 
 ```bash
-git clone https://github.com/siddhesh17b/MyAttendance.git
-cd MyAttendance
+git clone https://github.com/siddhesh17b/Bunkmeter.git
+cd Bunkmeter
 pip install tkcalendar
 python app.py
 ```
@@ -19,7 +19,7 @@ First run shows a setup wizard. Pick your batch, set semester dates, done.
 
 ## What it is
 
-MyAttendance is a compact, offline desktop app for students to track class attendance and instantly calculate how many classes can be missed while staying safe.
+Desktop app to calculate how many classes you can skip while staying above attendance thresholds.
 
 **Dual Threshold System:**
 - **60% minimum per subject** - Each subject must stay above 60%
@@ -107,7 +107,7 @@ MONDAY,02:00-04:00,CN Lab (B1&B3) / DAA Lab (B2&B4)
 | Problem | Fix |
 |---------|-----|
 | Won't start | `pip install tkcalendar` |
-| ModuleNotFoundError | Run from inside the MyAttendance folder |
+| ModuleNotFoundError | Run from inside the Bunkmeter folder |
 | Wrong attendance | Check semester dates in Setup tab |
 | Subject missing | Import a timetable with your subjects |
 | Need fresh start | Setup Tab → Reset Data |

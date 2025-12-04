@@ -1,5 +1,5 @@
 """
-MyAttendance - Smart Attendance Tracker
+Bunkmeter
 Main application entry point
 
 Author: Siddhesh Bisen
@@ -25,7 +25,7 @@ class BunkBuddyApp:
     
     def __init__(self, root):
         self.root = root
-        self.root.title("MyAttendance - Smart Attendance Tracker")
+        self.root.title("Bunkmeter")
         
         # Center the main window
         width = 1400
@@ -63,7 +63,7 @@ class BunkBuddyApp:
         """
         # Create modal dialog window
         setup_window = tk.Toplevel(self.root)
-        setup_window.title("Welcome to MyAttendance!")
+        setup_window.title("Welcome to Bunkmeter!")
         setup_window.geometry("500x350")
         setup_window.transient(self.root)  # Set as child of main window
         setup_window.grab_set()  # Make window modal (blocks interaction with parent)
@@ -76,7 +76,7 @@ class BunkBuddyApp:
         y = (setup_window.winfo_screenheight() // 2) - (height // 2)
         setup_window.geometry(f"{width}x{height}+{x}+{y}")
         
-        tk.Label(setup_window, text="Welcome to MyAttendance!", font=("Arial", 14, "bold")).pack(pady=10)
+        tk.Label(setup_window, text="Welcome to Bunkmeter!", font=("Arial", 14, "bold")).pack(pady=10)
         
         # Import timetable section
         import_frame = ttk.LabelFrame(setup_window, text="Step 1: Import Your Timetable (Optional)", padding=10)
@@ -223,8 +223,8 @@ class BunkBuddyApp:
         
         tk.Label(
             title_frame,
-            text="🎓 MyAttendance - Smart Attendance Tracker",
-            font=("Arial", 16, "bold"),
+            text="Bunkmeter",
+            font=("Arial", 18, "bold"),
             bg=COLOR_INFO,
             fg="white"
         ).pack(pady=15)
