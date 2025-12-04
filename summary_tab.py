@@ -36,7 +36,7 @@ COLOR_INFO = "#007bff"        # Blue - informational
 COLOR_BG_SAFE = "#d4edda"     # Light green background
 COLOR_BG_WARNING = "#fff3cd"  # Light yellow background
 COLOR_BG_RISK = "#f8d7da"     # Light red background
-COLOR_BG_DARK = "#e9ecef"     # Light gray background
+COLOR_BG_DARK = "#ffffff"     # White background for modern look
 COLOR_BG_CARD = "#ffffff"     # White card background
 
 
@@ -60,13 +60,13 @@ class SummaryTab:
         tab = ttk.Frame(self.notebook)
         
         # Main container with scrollbar
-        main_container = tk.Frame(tab)
+        main_container = tk.Frame(tab, bg='#ffffff')
         main_container.pack(fill=tk.BOTH, expand=True)
         
         # Canvas for scrolling
-        canvas = tk.Canvas(main_container, highlightthickness=0)
+        canvas = tk.Canvas(main_container, highlightthickness=0, bg='#ffffff')
         scrollbar = ttk.Scrollbar(main_container, orient="vertical", command=canvas.yview)
-        self.canvas_frame = tk.Frame(canvas)
+        self.canvas_frame = tk.Frame(canvas, bg='#ffffff')
         
         # Fill full width instead of centering
         canvas_window = canvas.create_window((0, 0), window=self.canvas_frame, anchor="nw")

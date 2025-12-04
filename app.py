@@ -17,7 +17,7 @@ from summary_tab import SummaryTab
 
 # Color scheme
 COLOR_INFO = "#007bff"
-COLOR_BG_LIGHT = "#f8f9fa"
+COLOR_BG_LIGHT = "#ffffff"  # Pure white for modern look
 
 
 class BunkBuddyApp:
@@ -216,32 +216,43 @@ class BunkBuddyApp:
     
     def create_ui(self):
         """Create main tabbed interface"""
-        # Title
-        title_frame = tk.Frame(self.root, bg=COLOR_INFO, height=60)
+        # Modern header with left-aligned content
+        title_frame = tk.Frame(self.root, bg="#000000", height=70)
         title_frame.pack(fill=tk.X)
         title_frame.pack_propagate(False)
         
+        # Left-aligned content
         tk.Label(
             title_frame,
-            text="BunkMeter",
-            font=("Arial", 18, "bold"),
-            bg=COLOR_INFO,
+            text="BunkMeter  —  Be Academically adventurous",
+            font=("Segoe UI", 18, "bold"),
+            bg="#000000",
             fg="white"
-        ).pack(pady=15)
+        ).pack(side=tk.LEFT, padx=25, pady=20)
         
-        # Configure ttk style for larger tabs
+        # Configure ttk style for larger tabs with centered text and white backgrounds
         style = ttk.Style()
+        style.configure('TNotebook', tabposition='n', background='#ffffff')
+        style.configure('TFrame', background='#ffffff')
+        style.configure('TLabelframe', background='#ffffff')
+        style.configure('TLabelframe.Label', background='#ffffff')
+        style.configure('TLabel', background='#ffffff')
         style.configure('TNotebook.Tab', 
-                       font=('Segoe UI', 12, 'bold'),
-                       padding=[30, 12],
-                       width=30)
+                       font=('Segoe UI', 16),
+                       padding=[40, 12],
+                       anchor='center')
         style.map('TNotebook.Tab',
                  background=[('selected', '#1976d2'), ('!selected', '#e3f2fd')],
-                 foreground=[('selected', '#000000'), ('!selected', '#1565c0')])
+                 foreground=[('selected', '#000000'), ('!selected', "#152fc0")])
         
-        # Tab control
+        # Tab control with expand option
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Bind event to make tabs expand to fill width
+        def on_notebook_configure(event):
+            style.configure('TNotebook.Tab', width=event.width // 4 - 10)
+        self.notebook.bind('<Configure>', on_notebook_configure)
         
         # Create tabs
         self.setup_tab = SetupTab(self.notebook, self.refresh_all_tabs)

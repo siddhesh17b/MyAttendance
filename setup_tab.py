@@ -43,10 +43,10 @@ class SetupTab:
         """Create setup tab"""
         tab = ttk.Frame(self.notebook)
         
-        # Scrollable frame
-        canvas = tk.Canvas(tab)
+        # Scrollable frame with white background
+        canvas = tk.Canvas(tab, bg='#ffffff', highlightthickness=0)
         scrollbar = ttk.Scrollbar(tab, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
+        scrollable_frame = tk.Frame(canvas, bg='#ffffff')
         
         canvas_window = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         
@@ -78,11 +78,11 @@ class SetupTab:
         
         app_data = get_app_data()
         
-        # Create 2-column layout for better space usage
-        self.left_column = ttk.Frame(scrollable_frame)
+        # Create 2-column layout for better space usage with white backgrounds
+        self.left_column = tk.Frame(scrollable_frame, bg='#ffffff')
         self.left_column.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E), padx=5, pady=5)
         
-        right_column = ttk.Frame(scrollable_frame)
+        right_column = tk.Frame(scrollable_frame, bg='#ffffff')
         right_column.grid(row=0, column=1, sticky=(tk.N, tk.W, tk.E), padx=5, pady=5)
         
         scrollable_frame.columnconfigure(0, weight=1)

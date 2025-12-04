@@ -34,8 +34,17 @@ class TimetableTab:
         controls_frame = ttk.Frame(title_frame)
         controls_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(5, 0))
         
-        self.batch_label = ttk.Label(controls_frame, text="", font=("Segoe UI", 10))
+        self.batch_label = ttk.Label(controls_frame, text="", font=("Segoe UI", 14, "bold"))
         self.batch_label.pack(side=tk.LEFT)
+        
+        # Horizontal scroll hint
+        hint_label = ttk.Label(
+            controls_frame, 
+            text="💡 Use mouse scroll wheel to scroll horizontally",
+            font=("Segoe UI", 10),
+            foreground="#666666"
+        )
+        hint_label.pack(side=tk.LEFT, padx=(30, 0))
         
         # Zoom controls
         zoom_frame = ttk.Frame(controls_frame)
@@ -77,11 +86,11 @@ class TimetableTab:
         self.refresh()
     
     def create_timetable_view(self):
-        container = ttk.Frame(self.frame)
+        container = tk.Frame(self.frame, bg='#ffffff')
         container.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 15))
         container.columnconfigure(0, weight=1)
         container.rowconfigure(0, weight=1)
-        canvas = tk.Canvas(container, bg="white", highlightthickness=0)
+        canvas = tk.Canvas(container, bg='#ffffff', highlightthickness=0)
         scrollbar = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
         self.timetable_frame = ttk.Frame(canvas)
         canvas.configure(xscrollcommand=scrollbar.set)

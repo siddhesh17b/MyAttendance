@@ -92,33 +92,13 @@ class AttendanceCalendar:
         hint_label.pack(side=tk.LEFT, padx=30)
     
     def create_calendar_container(self, parent):
-        """Create scrollable calendar grid container"""
+        """Create calendar grid container (no vertical scrolling)"""
         calendar_container = ttk.Frame(parent)
         calendar_container.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=10, pady=5)
         
-        # Canvas with scrollbar
-        canvas = tk.Canvas(calendar_container, bg="white", highlightthickness=0)
-        scrollbar = ttk.Scrollbar(calendar_container, orient="vertical", command=canvas.yview)
-        self.calendar_frame = ttk.Frame(canvas)
-        
-        canvas.configure(yscrollcommand=scrollbar.set)
-        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        canvas_window = canvas.create_window((0, 0), window=self.calendar_frame, anchor="nw")
-        
-        def configure_scroll(event):
-            canvas.configure(scrollregion=canvas.bbox("all"))
-            canvas.itemconfig(canvas_window, width=event.width)
-        
-        self.calendar_frame.bind("<Configure>", configure_scroll)
-        canvas.bind("<Configure>", configure_scroll)
-        
-        # Enable mouse wheel scrolling on calendar
-        def _on_calendar_mousewheel(event):
-            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        canvas.bind("<MouseWheel>", _on_calendar_mousewheel)
-        self.calendar_frame.bind("<MouseWheel>", _on_calendar_mousewheel)
+        # Simple frame without scrollbar
+        self.calendar_frame = ttk.Frame(calendar_container)
+        self.calendar_frame.pack(fill=tk.BOTH, expand=True)
     
     def create_side_panel(self, parent):
         """Create side panel for subject selection with enhanced styling"""
