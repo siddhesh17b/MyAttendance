@@ -100,15 +100,23 @@ Read-only display of your weekly schedule.
 - Columns: Time slots (dynamic - shows all times from your timetable)
 - Each cell shows the subject for that day/time
 
+### Zoom Controls
+- **"−"** button to zoom out (minimum 60%)
+- **"+"** button to zoom in (maximum 160%)
+- **"Reset"** button to return to 100%
+- Zoom affects font sizes, cell padding, and column widths
+
 ### Colors
-- Each subject gets a unique color (hash-based)
+- Each subject gets a unique color (hash-based algorithm)
 - Same subject = same color everywhere
 - "LUNCH" cells are gray
+- Colors are vibrant (high saturation) for easy distinction
 
 ### Notes
 - Saturday is treated as a working day (has classes)
 - Only Sunday is a weekend
 - Batch-specific subjects show only for your selected batch
+- Use mouse wheel to scroll horizontally when timetable is wide
 
 ---
 
@@ -368,6 +376,19 @@ Classes Needed = ceil((0.60 × Total - Attended) / 0.40)
 | `data.json` | All attendance data, holidays, settings | ❌ NO - loses everything |
 | `custom_timetable.json` | Your imported timetable | ✅ Yes - reverts to default |
 
+### App Files (Don't modify)
+
+| File | Purpose |
+|------|---------|
+| `app.py` | Main application entry point |
+| `data_manager.py` | Handles data loading/saving and timetable management |
+| `calculations.py` | Attendance math and safe-skip calculations |
+| `setup_tab.py` | Setup tab UI and configuration |
+| `timetable_tab.py` | Timetable display with color-coded subjects |
+| `attendance_calendar.py` | Calendar-style attendance marking |
+| `summary_tab.py` | Dashboard with stats and subject details |
+| `modern_dialogs.py` | Custom Material Design-style dialogs |
+
 ### Backup
 Copy `data.json` to backup your data.
 
@@ -386,10 +407,11 @@ Delete both files and restart the app for fresh install.
 | Subject missing | Import timetable with your subjects |
 | "0 classes" everywhere | Semester hasn't started yet |
 | "Remaining" shows 0 | Semester ended or date calculation issue |
-| Import fails | Check CSV format - days UPPERCASE, no header |
+| Import fails | Check CSV format - days UPPERCASE, header required |
 | Batch not appearing | CSV needs format: `Subject (BatchName)` |
 | Future dates locked | By design - can't mark future attendance |
 | Scroll not working | Move cursor to table area for table scroll |
+| Dialog looks wrong | All dialogs use modern Material Design style |
 | Want fresh start | Setup Tab → Reset Data |
 | Complete reset | Delete data.json + custom_timetable.json |
 
@@ -406,6 +428,8 @@ Delete both files and restart the app for fresh install.
 7. **Backup data.json** monthly - Don't lose your data
 8. **Double-click to fix** - Use override when timetable doesn't match reality
 9. **Check semester progress** - Days remaining badge shows urgency
+10. **Modern dialogs** - All popups use sleek Material Design styling with clear icons
+11. **Error messages are helpful** - If something goes wrong, the app tells you exactly what
 
 ---
 

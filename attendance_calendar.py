@@ -85,12 +85,17 @@ class AttendanceCalendar:
         ttk.Button(header_frame, text="Today", width=8,
                   command=self.go_to_today).pack(side=tk.LEFT, padx=20)
         
-        # Hint for right-click functionality
-        hint_label = ttk.Label(header_frame, 
-                              text="💡 Tip: Right-click any date to instantly mark entire day as absent",
-                              foreground="#666666",
-                              font=("Segoe UI", 10))
-        hint_label.pack(side=tk.LEFT, padx=30)
+        # Prominent hint for right-click functionality with styled background
+        hint_frame = tk.Frame(header_frame, bg="#fff3cd", padx=12, pady=6)
+        hint_frame.pack(side=tk.LEFT, padx=20)
+        
+        tk.Label(
+            hint_frame,
+            text="💡 Tip: Right-click any date to instantly mark entire day as absent",
+            font=("Segoe UI", 11, "bold"),
+            bg="#fff3cd",
+            fg="#856404"
+        ).pack()
     
     def create_calendar_container(self, parent):
         """Create calendar grid container (no vertical scrolling)"""

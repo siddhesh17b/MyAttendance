@@ -77,6 +77,8 @@ It focuses on accuracy (day-by-day counting), minimal input (present-by-default)
 | **Semester Progress** | Visual progress bar with days remaining |
 | **Subject Details** | Click any subject to see absent dates & recovery info |
 | **Responsive UI** | Resizes with window, works on any screen |
+| **Modern Dialogs** | Sleek Material Design-style popups and confirmations |
+| **Robust Error Handling** | Graceful handling of edge cases and invalid data |
 | **Offline** | No internet needed, all data stored locally |
 
 ---
@@ -116,6 +118,7 @@ MONDAY,02:00-04:00,CN Lab (B1&B3) / DAA Lab (B2&B4)
 | `app.py` | **Run this** |
 | `data.json` | Your attendance data (auto-created) |
 | `custom_timetable.json` | Your imported timetable |
+| `modern_dialogs.py` | Custom Material Design-style dialogs |
 | `timetable_template_simple.csv` | Simple CSV template (standard slots) |
 | `timetable_template_flexible.csv` | Advanced CSV template (custom times, groups) |
 | `COMPLETE_GUIDE.md` | Full step-by-step guide |
@@ -130,6 +133,8 @@ MONDAY,02:00-04:00,CN Lab (B1&B3) / DAA Lab (B2&B4)
 | ModuleNotFoundError | Run from inside the BunkMeter folder |
 | Wrong attendance | Check semester dates in Setup tab |
 | Subject missing | Import a timetable with your subjects |
+| Future dates locked | By design - cannot mark future attendance |
+| Import fails | Check CSV format - days must be UPPERCASE |
 | Need fresh start | Setup Tab → Reset Data |
 
 ---
