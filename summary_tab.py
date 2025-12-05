@@ -14,10 +14,11 @@ GitHub: https://github.com/siddhesh17b
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 from datetime import datetime
 
 from data_manager import get_app_data, count_subject_classes
+from modern_dialogs import messagebox
 from calculations import (
     calculate_attendance, 
     calculate_safe_skip, 

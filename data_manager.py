@@ -9,7 +9,8 @@ GitHub: https://github.com/siddhesh17b
 import json
 import os
 import csv
-from tkinter import messagebox, filedialog
+from tkinter import filedialog
+from modern_dialogs import messagebox
 from collections import defaultdict
 
 DATA_FILE = "data.json"

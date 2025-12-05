@@ -11,11 +11,12 @@ GitHub: https://github.com/siddhesh17b
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 import calendar
 from datetime import datetime, date
 
 from data_manager import get_app_data, save_data, get_subjects_for_day
+from modern_dialogs import messagebox
 
 # Color scheme for day status
 COLOR_PRESENT = "#ACDAAD"  #  all classes present

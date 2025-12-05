@@ -7,13 +7,14 @@ GitHub: https://github.com/siddhesh17b
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 from tkcalendar import Calendar
 from datetime import datetime
 from data_manager import get_app_data, save_data, parse_timetable_csv, \
     export_timetable_to_csv, import_timetable_from_csv, reset_to_default_timetable, \
     get_subjects_for_day, get_active_timetable
 from calculations import parse_date
+from modern_dialogs import messagebox
 import re
 
 class SetupTab:
@@ -729,7 +730,7 @@ class SetupTab:
             
             # Validate that subjects exist for this batch
             if not weekly_counts:
-                messagebox.showerror("Error", f"No subjects found for batch '{new_batch}'!\nPlease check your timetable.")
+                show_error(self.notebook, "Error", f"No subjects found for batch '{new_batch}'!\nPlease check your timetable.")
                 return
             
             existing_subjects = {s["name"]: s for s in app_data["subjects"]}
@@ -773,7 +774,7 @@ class SetupTab:
             if self.check_setup_complete():
                 messagebox.showinfo("Setup Complete", "Batch and dates configured! All features are now available.")
             else:
-                messagebox.showinfo("Next Step", "Dates saved! Now please select your batch and click 'Update Batch'.")
+                messagebox.showinfo("Next Step", "Dates saved! Now please select your batch and click 'Apply'.")
         else:
             messagebox.showinfo("Success", "Semester dates updated!")
     
@@ -1416,3 +1417,4 @@ class SetupTab:
             save_data()
             self.refresh_all_tabs()
             messagebox.showinfo("Success", "Timetable reset to default successfully!\nAll tabs have been updated.")
+
